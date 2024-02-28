@@ -1,0 +1,29 @@
+{
+    "user1": {
+        "allowedUsers": {"user2": ["read", "write"]},
+        "allowedGroups": {"group1": ["read", "write"]},
+        "isFolder": true,
+        "password": "password",
+        "children": {
+            "file1": {
+                "allowedUsers": { "user2": ["read", "write"]},
+                "allowedGroups": {"group1": ["read", "write"]},
+                "isFolder": false,
+                "children": {}
+
+            },
+            "folder1": {
+                "allowedUsers": {"user2": ["read", "write"]},
+                "allowedGroups": {"group1": ["read", "write"]},
+                "isFolder": true,
+                "children": {
+                    "file2": {
+                        "allowedUsers": {"user2": ["read", "write"]},
+                        "allowedGroups": {"group1": ["read", "write"]},
+                        "isFolder": false
+                    }
+                }
+            }
+        }
+    }
+}
