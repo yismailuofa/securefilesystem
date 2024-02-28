@@ -1,0 +1,7 @@
+{
+  "user1": {
+    "password": "foo",
+    "joinedGroups": ["group2"],
+    "ownedGroups": ["group1"]
+  }
+}
