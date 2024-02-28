@@ -12,10 +12,6 @@ class CLI(cmd.Cmd):
     user = None
 
     def do_login(self, line):
-        if self.user:
-            print(f"You are already logged in as {self.user}")
-            return
-
         parser = argparse.ArgumentParser(prog="login")
         parser.add_argument("username", type=str)
         parser.add_argument("password", type=str)
