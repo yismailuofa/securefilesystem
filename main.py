@@ -26,11 +26,11 @@ class CLI(cmd.Cmd):
 
         print(f"Logged in as {self.user}")
 
-    def do_quit(self, line):
+    def do_quit(self, _):
         "Quit the CLI"
         return True
 
-    def do_EOF(self, line):
+    def do_EOF(self, _):
         "Quit the CLI"
         return True
 
