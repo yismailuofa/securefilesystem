@@ -1,6 +1,5 @@
 import json
 
-
 class Permission:
     def __init__(self, name, isRead, isWrite) -> None:
         self.name: str = name
@@ -98,7 +97,6 @@ class Graph:
 
         with open(self.jsonPath, "w") as f:
             json.dump(out, f, indent=4)
-
 
     def __del__(self):
         self.dump()
@@ -270,5 +268,17 @@ class Graph:
             node.allowedGroups.append(Permission(targetGroup, True, True))
             return True
 
+    def deleteGroup(self, groupName: str) -> bool:
+        "Deletes a group from all nodes"
+        def deleteGroupFromNode(node: Node):
+            for permission in node.allowedGroups:
+                if permission.name == groupName:
+                    node.allowedGroups.remove(permission)
+                    print("Deleted group from ", node)
+                    break
+            for child in node.children:
+                deleteGroupFromNode(child)
+                
+        deleteGroupFromNode(self.root)
 if __name__ == "__main__":
     graph = Graph("json/permissions.example.json")

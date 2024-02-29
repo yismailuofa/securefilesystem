@@ -1,12 +1,12 @@
 import cmd
 import argparse
+from getpass import getpass
 from graph import Graph
 from user import Users
 
 from util import tryParse
 
 prompt_template = "sfs> {user}@{curr_dir}$ "
-
 
 class CLI(cmd.Cmd):
     # These are automatically set by cmd.Cmd
@@ -22,6 +22,15 @@ class CLI(cmd.Cmd):
         def wrapper(self, line):
             if self.user is None:
                 print("Please login first")
+                return
+            return f(self, line)
+
+        return wrapper
+    
+    def with_admin(f):
+        def wrapper(self, line):
+            if self.user is None or not self.user.isAdmin:
+                print("You need to be an admin to run this command")
                 return
             return f(self, line)
 
@@ -102,6 +111,73 @@ class CLI(cmd.Cmd):
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )
+        
+    @with_admin
+    def do_create_group(self, line):
+        "Create a new group. Usage: create_group <group_name>"
+        parser = argparse.ArgumentParser(prog="create_group")
+        parser.add_argument("group_name", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        if args.group_name in self.user.joinedGroups:
+            print("Group already exists")
+            return
+
+        added_users = input("Enter the names of the users to add to the group. Separate with a space: ").split()
+        added_users.append(self.user.name)
+        
+        if self.users.addUsersToGroup(args.group_name, added_users):
+            print(f"Group {args.group_name} created with users: {self.users.getUsersInGroup(args.group_name)}")
+        
+    @with_admin
+    def do_delete_group(self, line):
+        "Delete a group. Usage: delete_group <group_name>"
+        parser = argparse.ArgumentParser(prog="create_group")
+        parser.add_argument("group_name", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        if args.group_name not in self.user.joinedGroups:
+            print("Group doesn't exist")
+            return
+        
+        self.users.deleteUsersFromGroup(args.group_name, self.users.getUsersInGroup(args.group_name))
+        self.graph.deleteGroup(args.group_name)
+        print(f"Group {args.group_name} deleted")
+    
+    @with_admin
+    def do_update_group(self, line):
+        "Update an existing group. Usage update_group <group_name>"
+        parser = argparse.ArgumentParser(prog="create_group")
+        parser.add_argument("group_name", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        if args.group_name not in self.user.joinedGroups:
+            print("Group doesn't exist")
+            return
+        
+        # while loop to update
+        print("Enter add <usernames> to add a user to the group. Separate usernames by a space")
+        print("Enter remove <usernames> to remove a user from the group. Separate usernames by a space")
+        print("Enter done to finish")
+        while True:
+            print(f"Current users in {args.group_name}: {self.users.getUsersInGroup(args.group_name)}")
+            
+            cmd, *users = input("Enter command: ").split()
+            
+            if cmd == "add":
+                self.users.addUsersToGroup(args.group_name, users)
+            elif cmd == "remove":
+                self.users.deleteUsersFromGroup(args.group_name, users)
+            elif cmd == "done":
+                break
+            else:
+                print("Invalid command")
+                continue
+            
+        print(f"Group {args.group_name} updated")
 
     def do_EOF(self, _):
         "Quit the CLI"

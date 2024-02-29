@@ -1,4 +1,8 @@
 {
+  "admin": {
+    "password": "admin",
+    "joinedGroups": ["group1"]
+  },
   "user1": {
     "password": "foo",
     "joinedGroups": ["group1"]
