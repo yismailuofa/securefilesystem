@@ -3,5 +3,10 @@
     "password": "foo",
     "joinedGroups": ["group2"],
     "ownedGroups": ["group1"]
+  },
+  "user2": {
+    "password": "bar",
+    "joinedGroups": ["group1"],
+    "ownedGroups": ["group2"]
   }
 }
