@@ -26,6 +26,18 @@ def decryptJson(inFile: str) -> dict:
     return json.loads(fernet.decrypt(data))
 
 
+def encryptString(data: str) -> bytes:
+    fernet = Fernet(key())
+
+    return fernet.encrypt(data.encode())
+
+
+def decryptString(data: bytes) -> str:
+    fernet = Fernet(key())
+
+    return fernet.decrypt(data).decode()
+
+
 if __name__ == "__main__":
     with open("json/permissions.example.json", "r") as f:
         data = json.load(f)
