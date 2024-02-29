@@ -35,7 +35,7 @@ class Users:
             else:
                 users = json.load(f)
 
-            self.users = {name: User(name, **user) for name, user in users.items()}
+            self.users = {user["name"]: User(**user) for user in users}
 
             print("Loaded users from users.json")
 
