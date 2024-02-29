@@ -1,11 +1,13 @@
 {
   "name": "/",
+  "owner": "user1",
   "allowedUsers": [{ "name": "user1", "isRead": true, "isWrite": true }],
   "allowedGroups": [{ "name": "group1", "isRead": true, "isWrite": true }],
   "isFolder": true,
   "children": [
     {
       "name": "file1",
+      "owner": "user1",
       "allowedUsers": [{ "name": "user1", "isRead": true, "isWrite": true }],
       "allowedGroups": [{ "name": "group1", "isRead": true, "isWrite": true }],
       "isFolder": false,
@@ -13,12 +15,14 @@
     },
     {
       "name": "folder1",
+      "owner": "user1",
       "allowedUsers": [{ "name": "user1", "isRead": true, "isWrite": true }],
       "allowedGroups": [{ "name": "group1", "isRead": true, "isWrite": true }],
       "isFolder": true,
       "children": [
         {
           "name": "file2",
+          "owner": "user1",
           "allowedUsers": [
             { "name": "user1", "isRead": true, "isWrite": true }
           ],

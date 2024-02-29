@@ -14,9 +14,10 @@ class Permission:
 class Node:
 
     def __init__(
-        self, name: str, isFolder: bool, allowedUsers=[], allowedGroups=[], children=[]
+        self, name: str, owner: str, isFolder: bool, allowedUsers=[], allowedGroups=[], children=[]
     ) -> None:
         self.name = name
+        self.owner = owner
         self.children = [Node(**child) for child in children]
         self.isFolder = isFolder
         self.allowedUsers: list[Permission] = [
@@ -28,6 +29,44 @@ class Node:
 
     def __repr__(self) -> str:
         return f"Node(name={self.name}, isFolder={self.isFolder}, allowedUsers={[p.name for p in self.allowedUsers]}, allowedGroups={[p.name for p in self.allowedGroups]}, children={[c.name for c in self.children]})"
+    
+    def getReadableSubNodes(self, user: str, groups: list[str]) -> list[str]:
+        "Returns list of subnodes that are readable for a specific user"
+        readable = []
+        for child in self.children:
+            if self.isReadable(child, user, groups):
+                readable.append(child.name)
+
+        return readable
+    
+    def isReadable(self, user: str, groups: list[str]) -> bool:
+        "Returns if a node is readable for a specific user"
+        for permission in self.allowedUsers:
+            if permission.name == user and permission.isRead:
+                return True
+
+        for permission in self.allowedGroups:
+            if permission.name in groups and permission.isRead:
+                return True
+
+        return False
+    
+    def isWritable(self, user: str, groups: list[str]) -> bool:
+        "Returns if a node is writable for a specific user"
+        for permission in self.allowedUsers:
+            if permission.name == user and permission.isWrite:
+                return True
+
+        for permission in self.allowedGroups:
+            if permission.name in groups and permission.isWrite:
+                return True
+
+        return False
+    
+    def isOwner(self, user: str) -> bool:
+        "Returns if a user is the owner of a node"
+        return self.owner == user
+    
 
 
 class Graph:
@@ -50,6 +89,172 @@ class Graph:
     def __del__(self):
         self.dump()
 
+    def getNodeFromPath(self, path: str) -> Node:
+        "Returns node from path"
+        
+        if path == "/":
+            return self.root
+        
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    node = child
+                    break
+            else:
+                raise ValueError(f"Path {path} not found")
+    
+        return node
+
+    def createFolder(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:
+        "Creates a folder at a specific path"
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    node = child
+                    break
+            else:
+                if not node.isWritable(currentUser, currentGroups):
+                    return False
+                else:
+                    # create a new folder, copying permissions from parent
+                    node.children.append(Node(p, node.owner, True, node.allowedUsers, node.allowedGroups))
+                    node = node.children[-1]
+        
+        return True
+    
+    def createFile(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:
+        "Creates a file at a specific path"
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    node = child
+                    break
+            else:
+                if not node.isWritable(currentUser, currentGroups):
+                    return False
+                else:
+                    # create a new file, copying permissions from parent
+                    node.children.append(Node(p, node.owner, False, node.allowedUsers, node.allowedGroups))
+                    node = node.children[-1]
+                    return True
+        
+        return False
+    
+    def makeReadableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
+        "Makes a node readable for a specific user"
+        # travel down the path and make nodes readable on the way
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    if not child.isOwner(currentUser):
+                        return False
+                    else:
+                        for permission in child.allowedUsers:
+                            if permission.name == targetUser:
+                                permission.isRead = True
+                                return True
+                        else:
+                            child.allowedUsers.append(Permission(targetUser, True, False))
+                    node = child
+                    break
+            else:
+                raise ValueError(f"Path {path} not found")
+        
+        return True
+    
+    def makeWritableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
+        "Makes a node writable for a specific user"
+        # travel down the path and make nodes readable on the way
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    if not child.isOwner(currentUser):
+                        return False
+                    else:
+                        for permission in child.allowedUsers:
+                            if permission.name == targetUser:
+                                permission.isRead = True
+                                return True
+                        else:
+                            child.allowedUsers.append(Permission(targetUser, True, False))
+                    node = child
+                    break
+            else:
+                raise ValueError(f"Path {path} not found")
+        
+        # make the last node writable
+        for permission in node.allowedUsers:
+            if permission.name == targetUser:
+                permission.isWrite = True
+                return True
+        else:
+            node.allowedUsers.append(Permission(targetUser, True, True))
+            return True
+    
+    def makeReadableForGroup(self, path: str, currentUser: str, targetGroup: str) -> bool:
+        "Makes a node readable for a specific group"
+        # travel down the path and make nodes readable on the way
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    if not child.isOwner(currentUser):
+                        return False
+                    else:
+                        for permission in child.allowedGroups:
+                            if permission.name == targetGroup:
+                                permission.isRead = True
+                                return True
+                        else:
+                            child.allowedGroups.append(Permission(targetGroup, True, False))
+                    node = child
+                    break
+            else:
+                raise ValueError(f"Path {path} not found")
+        
+        return True
+    
+    def makeWritableForGroup(self, path: str, currentUser: str, targetGroup: str) -> bool:
+        "Makes a node writable for a specific group"
+        # travel down the path and make nodes readable on the way
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    if not child.isOwner(currentUser):
+                        return False
+                    else:
+                        for permission in child.allowedGroups:
+                            if permission.name == targetGroup:
+                                permission.isRead = True
+                                return True
+                        else:
+                            child.allowedGroups.append(Permission(targetGroup, True, False))
+                    node = child
+                    break
+            else:
+                raise ValueError(f"Path {path} not found")
+        
+        # make the last node writable
+        for permission in node.allowedGroups:
+            if permission.name == targetGroup:
+                permission.isWrite = True
+                return True
+        else:
+            node.allowedGroups.append(Permission(targetGroup, True, True))
+            return True
 
 if __name__ == "__main__":
     graph = Graph("json/permissions.example.json")
