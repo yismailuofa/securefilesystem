@@ -1,6 +1,5 @@
 import cmd
 import argparse
-from getpass import getpass
 from graph import Graph
 from user import Users
 
@@ -53,7 +52,7 @@ class CLI(cmd.Cmd):
             return
 
         self.user = self.users.users[args.username]
-        self.curr_dir = f"/{self.user.name}"
+        self.curr_dir = f"/{self.user.name}" if not self.user.isAdmin else "/"
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )
@@ -87,7 +86,10 @@ class CLI(cmd.Cmd):
         if args.path.startswith("/"):
             temp = args.path
         else:
-            temp = f"{self.curr_dir}/{args.path}"
+            if self.user.isAdmin:
+                temp = f"/{args.path}"
+            else:
+                temp = f"{self.curr_dir}/{args.path}"
             # split the path into parts
             parts = temp.split("/")
             # remove any ./
