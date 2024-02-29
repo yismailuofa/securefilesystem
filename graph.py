@@ -31,7 +31,7 @@ class Node:
 
 
 class Graph:
-    def __init__(self, jsonPath="permissions.json"):
+    def __init__(self, jsonPath="json/permissions.json"):
         self.jsonPath = jsonPath
 
         with open(jsonPath, "r") as f:
@@ -52,4 +52,4 @@ class Graph:
 
 
 if __name__ == "__main__":
-    graph = Graph("permissions.example.json")
+    graph = Graph("json/permissions.example.json")

@@ -15,7 +15,7 @@ class User:
 
 
 class Users:
-    def __init__(self, jsonPath="users.json"):
+    def __init__(self, jsonPath="json/users.json"):
         self.jsonPath = jsonPath
 
         with open(jsonPath, "r") as f:
@@ -36,4 +36,4 @@ class Users:
 
 
 if __name__ == "__main__":
-    users = Users("users.example.json")
+    users = Users("json/users.example.json")
