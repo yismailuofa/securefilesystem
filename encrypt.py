@@ -46,15 +46,3 @@ def decryptString(data: bytes) -> str:
 
 def isEncrypted(filePath: str) -> bool:
     return filePath.split("/")[-1].startswith(ENCRYPTION_PREFIX)
-
-
-if __name__ == "__main__":
-    with open("json/permissions.example.json", "r") as f:
-        data = json.load(f)
-
-    encryptJson(data, "permissions.json")
-
-    decoded = decryptJson("encrypted_permissions.json")
-
-    assert data == decoded
-    print("Success")
