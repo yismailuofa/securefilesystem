@@ -11,14 +11,24 @@ prompt_template = "sfs> {user}@{curr_dir}$ "
 class CLI(cmd.Cmd):
     # These are automatically set by cmd.Cmd
     intro = "Welcome to the Secure File System CLI. Type help or ? to list commands.\n"
+    prompt = "sfs> "
 
     user = None
     graph = Graph("json/permissions.example.json")
     curr_dir = "/"
-    prompt = "sfs> "
     users = Users()
 
+    def with_user(f):
+        def wrapper(self, line):
+            if self.user is None:
+                print("Please login first")
+                return
+            return f(self, line)
+
+        return wrapper
+
     def do_login(self, line):
+        "Login to the system. Usage: login <username> <password>"
         parser = argparse.ArgumentParser(prog="login")
         parser.add_argument("username", type=str)
         parser.add_argument("password", type=str)
@@ -44,20 +54,14 @@ class CLI(cmd.Cmd):
         "Quit the CLI"
         return True
 
+    @with_user
     def do_ls(self, _):
-        if self.user is None:
-            print("Please login first")
-            return
-
         "List files in the current directory"
         node = self.graph.getNodeFromPath(self.curr_dir)
         print(node.getReadableSubNodes(self.user.name, self.user.joinedGroups))
 
+    @with_user
     def do_cd(self, line):
-        if self.user is None:
-            print("Please login first")
-            return
-
         "Change the current directory"
         parser = argparse.ArgumentParser(prog="cd")
         parser.add_argument("path", type=str)
