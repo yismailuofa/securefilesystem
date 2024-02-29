@@ -2,6 +2,9 @@ from cryptography.fernet import Fernet
 import json
 
 
+ENCRYPTION_PREFIX = "encrypted_"
+
+
 def key():
     with open("fernet.key", "r") as f:
         key = f.read()
@@ -13,7 +16,10 @@ def encryptJson(data: dict, outFile: str) -> bytes:
 
     data = json.dumps(data).encode()
 
-    with open("encrypted_" + outFile, "wb") as f:
+    *path, fileName = outFile.split("/")
+    outFile = "/".join(path) + "/" + ENCRYPTION_PREFIX + fileName
+
+    with open(outFile, "wb") as f:
         f.write(fernet.encrypt(data))
 
 

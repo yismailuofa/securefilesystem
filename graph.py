@@ -1,4 +1,5 @@
 import json
+from encrypt import ENCRYPTION_PREFIX, decryptJson
 
 
 class Permission:
@@ -14,7 +15,13 @@ class Permission:
 class Node:
 
     def __init__(
-        self, name: str, owner: str, isFolder: bool, allowedUsers=[], allowedGroups=[], children=[]
+        self,
+        name: str,
+        owner: str,
+        isFolder: bool,
+        allowedUsers=[],
+        allowedGroups=[],
+        children=[],
     ) -> None:
         self.name = name
         self.owner = owner
@@ -29,7 +36,7 @@ class Node:
 
     def __repr__(self) -> str:
         return f"Node(name={self.name}, isFolder={self.isFolder}, allowedUsers={[p.name for p in self.allowedUsers]}, allowedGroups={[p.name for p in self.allowedGroups]}, children={[c.name for c in self.children]})"
-    
+
     def getReadableSubNodes(self, user: str, groups: list[str]) -> list[str]:
         "Returns list of subnodes that are readable for a specific user"
         readable = []
@@ -38,7 +45,7 @@ class Node:
                 readable.append(child.name)
 
         return readable
-    
+
     def isReadable(self, user: str, groups: list[str]) -> bool:
         "Returns if a node is readable for a specific user"
         for permission in self.allowedUsers:
@@ -50,7 +57,7 @@ class Node:
                 return True
 
         return False
-    
+
     def isWritable(self, user: str, groups: list[str]) -> bool:
         "Returns if a node is writable for a specific user"
         for permission in self.allowedUsers:
@@ -62,19 +69,23 @@ class Node:
                 return True
 
         return False
-    
+
     def isOwner(self, user: str) -> bool:
         "Returns if a user is the owner of a node"
         return self.owner == user
-    
 
 
 class Graph:
-    def __init__(self, jsonPath="json/permissions.json"):
+    def __init__(self, jsonPath):
         self.jsonPath = jsonPath
 
+        isEncrypted = jsonPath.split("/")[-1].startswith(ENCRYPTION_PREFIX)
+
         with open(jsonPath, "r") as f:
-            graph = json.load(f)
+            if isEncrypted:
+                graph = decryptJson(jsonPath)
+            else:
+                graph = json.load(f)
 
             self.root = Node(**graph)
 
@@ -93,22 +104,21 @@ class Graph:
             "isFolder": self.root.isFolder,
             "allowedUsers": [p.__dict__ for p in self.root.allowedUsers],
             "allowedGroups": [p.__dict__ for p in self.root.allowedGroups],
-            "children": [c.__dict__ for c in self.root.children]
+            "children": [c.__dict__ for c in self.root.children],
         }
 
         with open(self.jsonPath, "w") as f:
             json.dump(out, f, indent=4)
-
 
     def __del__(self):
         self.dump()
 
     def getNodeFromPath(self, path: str) -> Node:
         "Returns node from path"
-        
+
         if path == "/":
             return self.root
-        
+
         path = path.split("/")[1:]
         node = self.root
         for p in path:
@@ -118,10 +128,12 @@ class Graph:
                     break
             else:
                 raise ValueError(f"Path {path} not found")
-    
+
         return node
 
-    def createFolder(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:
+    def createFolder(
+        self, path: str, currentUser: str, currentGroups: list[str]
+    ) -> bool:
         "Creates a folder at a specific path"
         path = path.split("/")[1:]
         node = self.root
@@ -135,11 +147,13 @@ class Graph:
                     return False
                 else:
                     # create a new folder, copying permissions from parent
-                    node.children.append(Node(p, node.owner, True, node.allowedUsers, node.allowedGroups))
+                    node.children.append(
+                        Node(p, node.owner, True, node.allowedUsers, node.allowedGroups)
+                    )
                     node = node.children[-1]
-        
+
         return True
-    
+
     def createFile(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:
         "Creates a file at a specific path"
         path = path.split("/")[1:]
@@ -154,12 +168,16 @@ class Graph:
                     return False
                 else:
                     # create a new file, copying permissions from parent
-                    node.children.append(Node(p, node.owner, False, node.allowedUsers, node.allowedGroups))
+                    node.children.append(
+                        Node(
+                            p, node.owner, False, node.allowedUsers, node.allowedGroups
+                        )
+                    )
                     node = node.children[-1]
                     return True
-        
+
         return False
-    
+
     def makeReadableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
         "Makes a node readable for a specific user"
         # travel down the path and make nodes readable on the way
@@ -176,14 +194,16 @@ class Graph:
                                 permission.isRead = True
                                 return True
                         else:
-                            child.allowedUsers.append(Permission(targetUser, True, False))
+                            child.allowedUsers.append(
+                                Permission(targetUser, True, False)
+                            )
                     node = child
                     break
             else:
                 raise ValueError(f"Path {path} not found")
-        
+
         return True
-    
+
     def makeWritableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
         "Makes a node writable for a specific user"
         # travel down the path and make nodes readable on the way
@@ -200,12 +220,14 @@ class Graph:
                                 permission.isRead = True
                                 return True
                         else:
-                            child.allowedUsers.append(Permission(targetUser, True, False))
+                            child.allowedUsers.append(
+                                Permission(targetUser, True, False)
+                            )
                     node = child
                     break
             else:
                 raise ValueError(f"Path {path} not found")
-        
+
         # make the last node writable
         for permission in node.allowedUsers:
             if permission.name == targetUser:
@@ -214,8 +236,10 @@ class Graph:
         else:
             node.allowedUsers.append(Permission(targetUser, True, True))
             return True
-    
-    def makeReadableForGroup(self, path: str, currentUser: str, targetGroup: str) -> bool:
+
+    def makeReadableForGroup(
+        self, path: str, currentUser: str, targetGroup: str
+    ) -> bool:
         "Makes a node readable for a specific group"
         # travel down the path and make nodes readable on the way
         path = path.split("/")[1:]
@@ -231,15 +255,19 @@ class Graph:
                                 permission.isRead = True
                                 return True
                         else:
-                            child.allowedGroups.append(Permission(targetGroup, True, False))
+                            child.allowedGroups.append(
+                                Permission(targetGroup, True, False)
+                            )
                     node = child
                     break
             else:
                 raise ValueError(f"Path {path} not found")
-        
+
         return True
-    
-    def makeWritableForGroup(self, path: str, currentUser: str, targetGroup: str) -> bool:
+
+    def makeWritableForGroup(
+        self, path: str, currentUser: str, targetGroup: str
+    ) -> bool:
         "Makes a node writable for a specific group"
         # travel down the path and make nodes readable on the way
         path = path.split("/")[1:]
@@ -255,12 +283,14 @@ class Graph:
                                 permission.isRead = True
                                 return True
                         else:
-                            child.allowedGroups.append(Permission(targetGroup, True, False))
+                            child.allowedGroups.append(
+                                Permission(targetGroup, True, False)
+                            )
                     node = child
                     break
             else:
                 raise ValueError(f"Path {path} not found")
-        
+
         # make the last node writable
         for permission in node.allowedGroups:
             if permission.name == targetGroup:
@@ -269,6 +299,3 @@ class Graph:
         else:
             node.allowedGroups.append(Permission(targetGroup, True, True))
             return True
-
-if __name__ == "__main__":
-    graph = Graph("json/permissions.example.json")
