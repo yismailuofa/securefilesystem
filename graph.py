@@ -1,5 +1,5 @@
 import json
-from encrypt import ENCRYPTION_PREFIX, decryptJson, encryptJson, isEncrypted
+from encrypt import ENCRYPTION_PREFIX, decryptJson, encryptJson, encryptString, isEncrypted
 from functools import wraps
 
 
@@ -62,7 +62,13 @@ class Node:
         readable = []
         for child in self.children:
             if child.isReadable(user, groups):
-                readable.append(child.name)
+                # if child is a folder, add a / to the end
+                if child.isFolder:
+                    readable.append(child.name + "/")
+                else:
+                    readable.append(child.name)
+            else:
+                readable.append(encryptString(child.name))
 
         return readable
 
@@ -147,7 +153,7 @@ class Graph:
                     node = child
                     break
             else:
-                raise ValueError(f"Path {path} not found")
+                return None
 
         return node
 

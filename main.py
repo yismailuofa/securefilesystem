@@ -144,6 +144,12 @@ class CLI(cmd.Cmd):
         if not node.isReadable(self.user.name, self.user.joinedGroups):
             print("Access denied")
             return
+        
+        # now check if the node is a directory
+        if not node.isFolder:
+            print("Not a directory")
+            return
+        
         self.curr_dir = temp
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
@@ -188,6 +194,51 @@ class CLI(cmd.Cmd):
         )
         self.graph.deleteGroup(args.group_name)
         print(f"Group {args.group_name} deleted")
+
+    @with_user
+    def do_pwd(self, _):
+        "Print the current working directory"
+        print(self.curr_dir)
+    
+    @with_user
+    def do_cat(self, line):
+        "Read the contents of a file. Usage: cat <file_path>"
+        parser = argparse.ArgumentParser(prog="cat")
+        parser.add_argument("file_path", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        temp = ""
+        # convert to absolute path by accounting for ../ and ./
+        if args.path.startswith("/"):
+            temp = args.path
+        else:
+            if self.user.isAdmin:
+                temp = f"/{args.file_path}"
+            else:
+                temp = f"{self.curr_dir}/{args.file_path}"
+            # split the path into parts
+            parts = temp.split("/")
+            # remove any ./
+            parts = [part for part in parts if part != "."]
+            # pop previous directory if we encounter a ../
+            for i in range(len(parts)):
+                if parts[i] == "..":
+                    parts.pop(i)
+                    parts.pop(i - 1)
+                    break
+
+            temp = "/".join(parts)
+
+        if (node := self.graph.getNodeFromPath(args.file_path)) is None:
+            print("Invalid path")
+            return
+
+        if not node.isReadable(self.user.name, self.user.joinedGroups):
+            print("Access denied")
+            return
+
+        print(node.contents)
 
     @with_admin
     def do_update_group(self, line):
