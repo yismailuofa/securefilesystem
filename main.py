@@ -7,6 +7,7 @@ from util import tryParse
 
 prompt_template = "sfs> {user}@{curr_dir}$ "
 
+
 class CLI(cmd.Cmd):
     # These are automatically set by cmd.Cmd
     intro = "Welcome to the Secure File System CLI. Type help or ? to list commands.\n"
@@ -24,16 +25,18 @@ class CLI(cmd.Cmd):
         if (args := tryParse(parser, line)) is None:
             return
 
-        if args.username not in CLI.users.users:
+        if args.username not in self.users.users:
             print("User not found")
             return
         if CLI.users.users[args.username].password != args.password:
             print("Invalid password")
             return
-            
-        CLI.user = CLI.users.users[args.username]
-        CLI.curr_dir = f"/{self.user.name}"
-        CLI.prompt = prompt_template.format(user=CLI.user.name, curr_dir=CLI.curr_dir)
+
+        self.user = self.users.users[args.username]
+        self.curr_dir = f"/{self.user.name}"
+        self.prompt = prompt_template.format(
+            user=self.user.name, curr_dir=self.curr_dir
+        )
 
         print(f"Logged in as {self.user}")
 
@@ -42,27 +45,35 @@ class CLI(cmd.Cmd):
         return True
 
     def do_ls(self, _):
+        if self.user is None:
+            print("Please login first")
+            return
+
         "List files in the current directory"
-        node = CLI.graph.getNodeFromPath(CLI.curr_dir)
-        print(node.getReadableSubNodes(CLI.user.name, CLI.user.joinedGroups))
+        node = self.graph.getNodeFromPath(self.curr_dir)
+        print(node.getReadableSubNodes(self.user.name, self.user.joinedGroups))
 
     def do_cd(self, line):
+        if self.user is None:
+            print("Please login first")
+            return
+
         "Change the current directory"
         parser = argparse.ArgumentParser(prog="cd")
         parser.add_argument("path", type=str)
         if (args := tryParse(parser, line)) is None:
             return
 
-        if (node := CLI.graph.getNodeFromPath(args.path)) is None:
+        if (node := self.graph.getNodeFromPath(args.path)) is None:
             print("Invalid path")
             return
 
-        temp = ''
+        temp = ""
         # convert to absolute path by accounting for ../ and ./
         if args.path.startswith("/"):
             temp = args.path
         else:
-            temp = f"{CLI.curr_dir}/{args.path}"
+            temp = f"{self.curr_dir}/{args.path}"
             # split the path into parts
             parts = temp.split("/")
             # remove any ./
@@ -71,20 +82,22 @@ class CLI(cmd.Cmd):
             for i in range(len(parts)):
                 if parts[i] == "..":
                     parts.pop(i)
-                    parts.pop(i-1)
+                    parts.pop(i - 1)
                     break
 
             temp = "/".join(parts)
-        
-        if (node := CLI.graph.getNodeFromPath(temp)) is None:
+
+        if (node := self.graph.getNodeFromPath(temp)) is None:
             print("Invalid path")
             return
         # now check if the user has access to the new directory
-        if not node.isReadable(CLI.user.name, CLI.user.joinedGroups):
+        if not node.isReadable(self.user.name, self.user.joinedGroups):
             print("Access denied")
             return
-        CLI.curr_dir = temp
-        CLI.prompt = prompt_template.format(user=CLI.user.name, curr_dir=CLI.curr_dir)
+        self.curr_dir = temp
+        self.prompt = prompt_template.format(
+            user=self.user.name, curr_dir=self.curr_dir
+        )
 
     def do_EOF(self, _):
         "Quit the CLI"
