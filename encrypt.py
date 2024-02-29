@@ -44,6 +44,10 @@ def decryptString(data: bytes) -> str:
     return fernet.decrypt(data).decode()
 
 
+def isEncrypted(filePath: str) -> bool:
+    return filePath.split("/")[-1].startswith(ENCRYPTION_PREFIX)
+
+
 if __name__ == "__main__":
     with open("json/permissions.example.json", "r") as f:
         data = json.load(f)

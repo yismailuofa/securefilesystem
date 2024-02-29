@@ -1,43 +1,83 @@
 {
   "name": "/",
   "owner": "admin",
-  "allowedUsers": [{ "name": "admin", "isRead": true, "isWrite": true }],
-  "allowedGroups": [],
   "isFolder": true,
+  "allowedUsers": [
+    {
+      "name": "admin",
+      "isRead": true,
+      "isWrite": true
+    }
+  ],
+  "allowedGroups": [],
   "children": [
     {
       "name": "user1",
       "owner": "user1",
-      "allowedUsers": [{ "name": "user1", "isRead": true, "isWrite": true }],
-      "allowedGroups": [{ "name": "group1", "isRead": true, "isWrite": true }],
       "isFolder": true,
+      "allowedUsers": [
+        {
+          "name": "user1",
+          "isRead": true,
+          "isWrite": true
+        }
+      ],
+      "allowedGroups": [
+        {
+          "name": "group1",
+          "isRead": true,
+          "isWrite": true
+        }
+      ],
       "children": [
         {
           "name": "foo.txt",
           "owner": "user1",
+          "isFolder": false,
           "allowedUsers": [
-            { "name": "user1", "isRead": true, "isWrite": true }
+            {
+              "name": "user1",
+              "isRead": true,
+              "isWrite": true
+            }
           ],
           "allowedGroups": [],
-          "isFolder": false
+          "children": []
         }
       ]
     },
     {
       "name": "user2",
       "owner": "user2",
-      "allowedUsers": [{ "name": "user2", "isRead": true, "isWrite": true }],
-      "allowedGroups": [{ "name": "group1", "isRead": true, "isWrite": true }],
       "isFolder": true,
+      "allowedUsers": [
+        {
+          "name": "user2",
+          "isRead": true,
+          "isWrite": true
+        }
+      ],
+      "allowedGroups": [
+        {
+          "name": "group1",
+          "isRead": true,
+          "isWrite": true
+        }
+      ],
       "children": [
         {
           "name": "foou2.txt",
           "owner": "user2",
+          "isFolder": false,
           "allowedUsers": [
-            { "name": "user2", "isRead": true, "isWrite": true }
+            {
+              "name": "user2",
+              "isRead": true,
+              "isWrite": true
+            }
           ],
           "allowedGroups": [],
-          "isFolder": false
+          "children": []
         }
       ]
     }

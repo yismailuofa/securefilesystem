@@ -1,5 +1,6 @@
 import json
-from encrypt import ENCRYPTION_PREFIX, decryptJson
+from encrypt import ENCRYPTION_PREFIX, decryptJson, encryptJson, isEncrypted
+from functools import wraps
 
 
 class Permission:
@@ -10,6 +11,13 @@ class Permission:
 
     def __repr__(self) -> str:
         return f"Permission(name={self.name}, isRead={self.isRead}, isWrite={self.isWrite})"
+
+    def dump(self) -> dict:
+        return {
+            "name": self.name,
+            "isRead": self.isRead,
+            "isWrite": self.isWrite,
+        }
 
 
 class Node:
@@ -36,6 +44,18 @@ class Node:
 
     def __repr__(self) -> str:
         return f"Node(name={self.name}, isFolder={self.isFolder}, allowedUsers={[p.name for p in self.allowedUsers]}, allowedGroups={[p.name for p in self.allowedGroups]}, children={[c.name for c in self.children]})"
+
+    def dump(self) -> dict:
+        "Dumps node to a dictionary"
+
+        return {
+            "name": self.name,
+            "owner": self.owner,
+            "isFolder": self.isFolder,
+            "allowedUsers": [p.dump() for p in self.allowedUsers],
+            "allowedGroups": [p.dump() for p in self.allowedGroups],
+            "children": [c.dump() for c in self.children],
+        }
 
     def getReadableSubNodes(self, user: str, groups: list[str]) -> list[str]:
         "Returns list of subnodes that are readable for a specific user"
@@ -76,13 +96,12 @@ class Node:
 
 
 class Graph:
-    def __init__(self, jsonPath):
+    def __init__(self, jsonPath: str):
         self.jsonPath = jsonPath
-
-        isEncrypted = jsonPath.split("/")[-1].startswith(ENCRYPTION_PREFIX)
+        self.isEncrypted = isEncrypted(jsonPath)
 
         with open(jsonPath, "r") as f:
-            if isEncrypted:
+            if self.isEncrypted:
                 graph = decryptJson(jsonPath)
             else:
                 graph = json.load(f)
@@ -90,29 +109,30 @@ class Graph:
             self.root = Node(**graph)
 
             print("Loaded graph from permissions.json")
-            print(self.root)
 
     def dump(self):
         "Dumps graph to a file, should be called on exit"
 
-        print("Dumping graph to ", self.jsonPath)
+        data = self.root.dump()
 
-        # not sure if this will recursively dump the whole graph
-        out = {
-            "name": self.root.name,
-            "owner": self.root.owner,
-            "isFolder": self.root.isFolder,
-            "allowedUsers": [p.__dict__ for p in self.root.allowedUsers],
-            "allowedGroups": [p.__dict__ for p in self.root.allowedGroups],
-            "children": [c.__dict__ for c in self.root.children],
-        }
+        if self.isEncrypted:
+            encryptJson(data, self.jsonPath)
+        else:
+            with open(self.jsonPath, "w") as f:
+                json.dump(data, f, indent=2)
 
-        with open(self.jsonPath, "w") as f:
-            json.dump(out, f, indent=4)
+    def withDump(func):
+        "Decorator to dump graph after function call"
 
-    def __del__(self):
-        self.dump()
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            result = func(self, *args, **kwargs)
+            self.dump()
+            return result
 
+        return wrapper
+
+    @withDump
     def getNodeFromPath(self, path: str) -> Node:
         "Returns node from path"
 
