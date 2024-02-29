@@ -2,13 +2,10 @@ import json
 
 
 class User:
-    def __init__(
-        self, name: str, password: str, joinedGroups=[], ownedGroups=[]
-    ) -> None:
+    def __init__(self, name: str, password: str, joinedGroups=[]) -> None:
         self.name: str = name
         self.password: str = password
         self.joinedGroups: list[str] = joinedGroups
-        self.ownedGroups: list[str] = ownedGroups
 
     def __repr__(self) -> str:
         return f"User(name={self.name}, password={self.password}, joinedGroups={self.joinedGroups}, ownedGroups={self.ownedGroups})"

@@ -1,12 +1,10 @@
 {
   "user1": {
     "password": "foo",
-    "joinedGroups": ["group2"],
-    "ownedGroups": ["group1"]
+    "joinedGroups": ["group2"]
   },
   "user2": {
     "password": "bar",
-    "joinedGroups": ["group1"],
-    "ownedGroups": ["group2"]
+    "joinedGroups": ["group1"]
   }
 }
