@@ -86,6 +86,20 @@ class Graph:
 
         print("Dumping graph to ", self.jsonPath)
 
+        # not sure if this will recursively dump the whole graph
+        out = {
+            "name": self.root.name,
+            "owner": self.root.owner,
+            "isFolder": self.root.isFolder,
+            "allowedUsers": [p.__dict__ for p in self.root.allowedUsers],
+            "allowedGroups": [p.__dict__ for p in self.root.allowedGroups],
+            "children": [c.__dict__ for c in self.root.children]
+        }
+
+        with open(self.jsonPath, "w") as f:
+            json.dump(out, f, indent=4)
+
+
     def __del__(self):
         self.dump()
 
