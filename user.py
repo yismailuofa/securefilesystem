@@ -8,11 +8,11 @@ class User:
         self.joinedGroups: list[str] = joinedGroups
 
     def __repr__(self) -> str:
-        return f"User(name={self.name}, password={self.password}, joinedGroups={self.joinedGroups}, ownedGroups={self.ownedGroups})"
+        return f"User(name={self.name}, password={self.password}, joinedGroups={self.joinedGroups})"
 
 
 class Users:
-    def __init__(self, jsonPath="json/users.json"):
+    def __init__(self, jsonPath="json/users.example.json"):
         self.jsonPath = jsonPath
 
         with open(jsonPath, "r") as f:

@@ -34,7 +34,7 @@ class Node:
         "Returns list of subnodes that are readable for a specific user"
         readable = []
         for child in self.children:
-            if self.isReadable(child, user, groups):
+            if child.isReadable(user, groups):
                 readable.append(child.name)
 
         return readable
