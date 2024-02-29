@@ -42,7 +42,7 @@ class Users:
     def dump(self):
         "Dumps users to a file, should be called on exit"
 
-        data = {name: user.dump() for name, user in self.users.items()}
+        data = {user.dump() for user in self.users.items()}
 
         if self.isEncrypted:
             encryptJson(self.jsonPath, data)

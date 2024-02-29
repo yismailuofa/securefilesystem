@@ -322,6 +322,7 @@ class Graph:
 
     def deleteGroup(self, groupName: str) -> bool:
         "Deletes a group from all nodes"
+
         def deleteGroupFromNode(node: Node):
             for permission in node.allowedGroups:
                 if permission.name == groupName:
@@ -330,7 +331,9 @@ class Graph:
                     break
             for child in node.children:
                 deleteGroupFromNode(child)
-                
+
         deleteGroupFromNode(self.root)
+
+
 if __name__ == "__main__":
     graph = Graph("json/permissions.example.json")
