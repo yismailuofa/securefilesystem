@@ -50,6 +50,57 @@ class Graph:
     def __del__(self):
         self.dump()
 
+    def getNodeFromPath(self, path: str) -> Node:
+        "Returns node from path"
+        
+        if path == "/":
+            return self.root
+        
+        path = path.split("/")[1:]
+        node = self.root
+        for p in path:
+            for child in node.children:
+                if child.name == p:
+                    node = child
+                    break
+            else:
+                raise ValueError(f"Path {path} not found")
+    
+        return node
+
+    def getReadableSubNodes(self, path: str, user: str, groups: list[str]) -> list[str]:
+        "Returns list of subnodes that are readable for a specific user"
+        node = self.getNodeFromPath(path)
+        readable = []
+        for child in node.children:
+            if self.isReadable(child, user, groups):
+                readable.append(child.name)
+
+        return readable
+    
+    def isReadable(self, node: Node, user: str, groups: list[str]) -> bool:
+        "Returns if a node is readable for a specific user"
+        for permission in node.allowedUsers:
+            if permission.name == user and permission.isRead:
+                return True
+
+        for permission in node.allowedGroups:
+            if permission.name in groups and permission.isRead:
+                return True
+
+        return False
+    
+    def isWritable(self, node: Node, user: str, groups: list[str]) -> bool:
+        "Returns if a node is writable for a specific user"
+        for permission in node.allowedUsers:
+            if permission.name == user and permission.isWrite:
+                return True
+
+        for permission in node.allowedGroups:
+            if permission.name in groups and permission.isWrite:
+                return True
+
+        return False
 
 if __name__ == "__main__":
     graph = Graph("permissions.example.json")
