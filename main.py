@@ -85,6 +85,13 @@ class CLI(cmd.Cmd):
             user=self.user.name, curr_dir=self.curr_dir
         )
         print(f"User {args.username} registered and logged in")
+        
+    def do_logout(self, _):
+        "Logout of the system"
+        self.user = None
+        self.curr_dir = "/"
+        self.prompt = "sfs> "
+        print("Logged out")
 
     def do_quit(self, _):
         "Quit the CLI"
