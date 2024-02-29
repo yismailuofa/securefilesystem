@@ -42,7 +42,7 @@ class Users:
     def dump(self):
         "Dumps users to a file, should be called on exit"
 
-        data = [user.dump() for user in self.users.items()]
+        data = [user.dump() for _, user in self.users.items()]
 
         if self.isEncrypted:
             encryptJson(self.jsonPath, data)
@@ -85,6 +85,7 @@ class Users:
 
         return True
 
+    @withDump
     def deleteUsersFromGroup(self, groupName: str, deleted_users: list[str]):
         for user in deleted_users:
             if user not in self.users:
@@ -102,6 +103,14 @@ class Users:
             self.users[user].joinedGroups.remove(groupName)
             print(f"Removed {user} from {groupName}")
 
+    @withDump
+    def createUser(self, name: str, password: str):
+        if name in self.users:
+            print("User already exists")
+            return
+
+        self.users[name] = User(name, password)
+        print(f"User {name} created")
 
 if __name__ == "__main__":
     users = Users("json/users.example.json")

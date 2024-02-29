@@ -58,6 +58,33 @@ class CLI(cmd.Cmd):
         )
 
         print(f"Logged in as {self.user}")
+        
+    def do_register(self, line):
+        "Register a new user. Usage: register <username> <password> <confirm_password>"
+        parser = argparse.ArgumentParser(prog="register")
+        parser.add_argument("username", type=str)
+        parser.add_argument("password", type=str)
+        parser.add_argument("confirm_password", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        if args.username in self.users.users:
+            print("User already exists")
+            return
+        
+        if args.password != args.confirm_password:
+            print("Passwords don't match")
+            return
+
+        self.users.createUser(args.username, args.password)
+        print(self.users.users)
+        self.user = self.users.users[args.username]
+        print(self.user)
+        self.curr_dir = f"/{self.user.name}" if not self.user.isAdmin else "/"
+        self.prompt = prompt_template.format(
+            user=self.user.name, curr_dir=self.curr_dir
+        )
+        print(f"User {args.username} registered and logged in")
 
     def do_quit(self, _):
         "Quit the CLI"
