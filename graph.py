@@ -1,5 +1,5 @@
 import json
-from encrypt import ENCRYPTION_PREFIX, decryptJson, encryptJson, encryptString, isEncrypted
+from encrypt import decryptJson, encryptJson, encryptString, isEncrypted
 from functools import wraps
 
 

@@ -32,13 +32,13 @@ def decryptJson(inFile: str) -> dict:
     return json.loads(fernet.decrypt(data))
 
 
-def encryptString(data: str) -> bytes:
+def encryptString(data: str) -> str:
     fernet = Fernet(key())
 
-    return fernet.encrypt(data.encode())
+    return fernet.encrypt(data.encode()).decode()
 
 
-def decryptString(data: bytes) -> str:
+def decryptString(data: str) -> str:
     fernet = Fernet(key())
 
     return fernet.decrypt(data).decode()
