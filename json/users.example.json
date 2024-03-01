@@ -1,17 +1,17 @@
 [
   {
     "name": "admin",
-    "password": "admin",
+    "password": "$2b$12$4tdDvsvDSn9xcBHxv3OoYORR.PxX4ncfid8gb3iqnU76bu.jRQoiO",
     "joinedGroups": ["group1", "group2"]
   },
   {
     "name": "user1",
-    "password": "foo",
+    "password": "$2b$12$rq9DjkSfiuvm8npGUr12WeVXAAEeFfOjXmFxgKR/uUGkJtJYy60Jm",
     "joinedGroups": ["group1", "group2"]
   },
   {
     "name": "user2",
-    "password": "bar",
+    "password": "$2b$12$UFlOrcpFOfB/YckcOD7Nn.NDxm4ozA7vF/n8HWCKvQ6LRyg6eGvl.",
     "joinedGroups": ["group1"]
   }
 ]
