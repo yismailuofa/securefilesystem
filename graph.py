@@ -114,8 +114,6 @@ class Graph:
 
             self.root = Node(**graph)
 
-            print("Loaded graph from permissions.json")
-
     def dump(self):
         "Dumps graph to a file, should be called on exit"
 

@@ -57,8 +57,8 @@ class CLI(cmd.Cmd):
             user=self.user.name, curr_dir=self.curr_dir
         )
 
-        print(f"Logged in as {self.user}")
-        
+        print(f"Logged in as {self.user.name}")
+
     def do_register(self, line):
         "Register a new user. Usage: register <username> <password> <confirm_password>"
         parser = argparse.ArgumentParser(prog="register")
@@ -71,21 +71,21 @@ class CLI(cmd.Cmd):
         if args.username in self.users.users:
             print("User already exists")
             return
-        
+
         if args.password != args.confirm_password:
             print("Passwords don't match")
             return
 
         self.users.createUser(args.username, args.password)
-        print(self.users.users)
+
         self.user = self.users.users[args.username]
-        print(self.user)
+
         self.curr_dir = f"/{self.user.name}" if not self.user.isAdmin else "/"
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )
         print(f"User {args.username} registered and logged in")
-        
+
     def do_logout(self, _):
         "Logout of the system"
         self.user = None
@@ -144,12 +144,12 @@ class CLI(cmd.Cmd):
         if not node.isReadable(self.user.name, self.user.joinedGroups):
             print("Access denied")
             return
-        
+
         # now check if the node is a directory
         if not node.isFolder:
             print("Not a directory")
             return
-        
+
         self.curr_dir = temp
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
@@ -199,7 +199,7 @@ class CLI(cmd.Cmd):
     def do_pwd(self, _):
         "Print the current working directory"
         print(self.curr_dir)
-    
+
     @with_user
     def do_cat(self, line):
         "Read the contents of a file. Usage: cat <file_path>"
@@ -210,7 +210,7 @@ class CLI(cmd.Cmd):
 
         temp = ""
         # convert to absolute path by accounting for ../ and ./
-        if args.path.startswith("/"):
+        if args.file_path.startswith("/"):
             temp = args.path
         else:
             if self.user.isAdmin:

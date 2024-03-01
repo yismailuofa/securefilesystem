@@ -37,8 +37,6 @@ class Users:
 
             self.users = {user["name"]: User(**user) for user in users}
 
-            print("Loaded users from users.json")
-
     def dump(self):
         "Dumps users to a file, should be called on exit"
 
@@ -105,12 +103,10 @@ class Users:
 
     @withDump
     def createUser(self, name: str, password: str):
-        if name in self.users:
-            print("User already exists")
-            return
-
         self.users[name] = User(name, password)
+
         print(f"User {name} created")
+
 
 if __name__ == "__main__":
     users = Users("json/users.example.json")
