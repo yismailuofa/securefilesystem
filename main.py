@@ -1,6 +1,7 @@
 import cmd
 import argparse
 import bcrypt
+import getpass
 from graph import Graph
 from user import Users
 
@@ -38,23 +39,20 @@ class CLI(cmd.Cmd):
         return wrapper
 
     def do_login(self, line):
-        "Login to the system. Usage: login <username> <password>"
-        parser = argparse.ArgumentParser(prog="login")
-        parser.add_argument("username", type=str)
-        parser.add_argument("password", type=str)
-        if (args := tryParse(parser, line)) is None:
-            return
+        "Login to the system. Usage: login"
+        
+        username = input("Enter username: ")
+        password = getpass.getpass("Enter password: ")
 
-        if args.username not in self.users.users:
+        if username not in self.users.users:
             print("User not found")
             return
         
-        if not bcrypt.checkpw(args.password.encode(), self.users.users[args.username].password.encode()):
-        # if CLI.users.users[args.username].password != args.password:
+        if not bcrypt.checkpw(password.encode(), self.users.users[username].password.encode()):
             print("Invalid password")
             return
 
-        self.user = self.users.users[args.username]
+        self.user = self.users.users[username]
         self.curr_dir = f"/{self.user.name}" if not self.user.isAdmin else "/"
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
@@ -63,32 +61,30 @@ class CLI(cmd.Cmd):
         print(f"Logged in as {self.user.name}")
 
     def do_register(self, line):
-        "Register a new user. Usage: register <username> <password> <confirm_password>"
-        parser = argparse.ArgumentParser(prog="register")
-        parser.add_argument("username", type=str)
-        parser.add_argument("password", type=str)
-        parser.add_argument("confirm_password", type=str)
-        if (args := tryParse(parser, line)) is None:
-            return
+        "Register a new user. Usage: register"
+        
+        username = input("Enter username: ")
+        password = getpass.getpass("Enter password: ")
+        confirm_password = getpass.getpass("Confirm password: ")
 
-        if args.username in self.users.users:
+        if username in self.users.users:
             print("User already exists")
             return
 
-        if args.password != args.confirm_password:
+        if password != confirm_password:
             print("Passwords don't match")
             return
         
-        hashedPass = bcrypt.hashpw(args.password.encode(), bcrypt.gensalt())
-        self.users.createUser(args.username, hashedPass.decode())
+        hashedPass = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        self.users.createUser(username, hashedPass.decode())
 
-        self.user = self.users.users[args.username]
+        self.user = self.users.users[username]
 
         self.curr_dir = f"/{self.user.name}" if not self.user.isAdmin else "/"
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )
-        print(f"User {args.username} registered and logged in")
+        print(f"User {username} registered and logged in")
 
     def do_logout(self, _):
         "Logout of the system"
