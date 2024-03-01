@@ -1,5 +1,6 @@
 import cmd
 import argparse
+import bcrypt
 from graph import Graph
 from user import Users
 
@@ -47,7 +48,9 @@ class CLI(cmd.Cmd):
         if args.username not in self.users.users:
             print("User not found")
             return
-        if CLI.users.users[args.username].password != args.password:
+        
+        if not bcrypt.checkpw(args.password.encode(), self.users.users[args.username].password.encode()):
+        # if CLI.users.users[args.username].password != args.password:
             print("Invalid password")
             return
 
@@ -75,8 +78,9 @@ class CLI(cmd.Cmd):
         if args.password != args.confirm_password:
             print("Passwords don't match")
             return
-
-        self.users.createUser(args.username, args.password)
+        
+        hashedPass = bcrypt.hashpw(args.password.encode(), bcrypt.gensalt())
+        self.users.createUser(args.username, hashedPass.decode())
 
         self.user = self.users.users[args.username]
 
