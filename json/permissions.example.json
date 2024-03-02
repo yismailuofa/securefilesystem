@@ -12,74 +12,18 @@
   "allowedGroups": [],
   "children": [
     {
-      "name": "user3",
-      "owner": "user1",
+      "name": "u1",
+      "owner": "u1",
       "isFolder": true,
       "allowedUsers": [
         {
-          "name": "user1",
+          "name": "u1",
           "isRead": true,
           "isWrite": true
         }
       ],
-      "allowedGroups": [
-        {
-          "name": "group2",
-          "isRead": true,
-          "isWrite": true
-        }
-      ],
-      "children": [
-        {
-          "name": "bar.txt",
-          "owner": "user1",
-          "isFolder": false,
-          "allowedUsers": [
-            {
-              "name": "user1",
-              "isRead": true,
-              "isWrite": true
-            }
-          ],
-          "allowedGroups": [],
-          "children": []
-        }
-      ]
-    },
-    {
-      "name": "user2",
-      "owner": "user2",
-      "isFolder": true,
-      "allowedUsers": [
-        {
-          "name": "user2",
-          "isRead": true,
-          "isWrite": true
-        }
-      ],
-      "allowedGroups": [
-        {
-          "name": "group1",
-          "isRead": true,
-          "isWrite": true
-        }
-      ],
-      "children": [
-        {
-          "name": "foo2.txt",
-          "owner": "user2",
-          "isFolder": false,
-          "allowedUsers": [
-            {
-              "name": "user2",
-              "isRead": true,
-              "isWrite": true
-            }
-          ],
-          "allowedGroups": [],
-          "children": []
-        }
-      ]
+      "allowedGroups": [],
+      "children": []
     }
   ]
 }

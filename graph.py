@@ -28,8 +28,8 @@ class Node:
         name: str,
         owner: str,
         isFolder: bool,
-        allowedUsers=[],
-        allowedGroups=[],
+        allowedUsers: list[dict] = [],
+        allowedGroups: list[dict] = [],
         children=[],
     ) -> None:
         self.name = name
@@ -181,6 +181,14 @@ class Graph:
                     node = node.children[-1]
 
         return True
+
+    @withDump
+    def initUserDirectory(self, user: str):
+        "Initializes the user directory"
+        self.root.children.append(
+            Node(user, user, True, [Permission(user, True, True).dump()], [])
+        )
+        fileio.makePath(user, isFile=False)
 
     @withDump
     def createFile(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:

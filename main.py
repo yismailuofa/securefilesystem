@@ -1,5 +1,6 @@
 import cmd
 import argparse
+import fileio
 import bcrypt
 import getpass
 from graph import Graph
@@ -117,6 +118,9 @@ class CLI(cmd.Cmd):
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )
+
+        self.graph.initUserDirectory(self.user.name)
+
         print(f"User {username} registered and logged in")
 
     def do_logout(self, _):
@@ -258,6 +262,22 @@ class CLI(cmd.Cmd):
             return
 
         self.graph.renameNode(source, args.name)
+
+    @with_user
+    def do_mkdir(self, line):
+        "Create a new directory. Usage: mkdir <dir_name>"
+        parser = argparse.ArgumentParser(prog="mkdir")
+        parser.add_argument("dir_name", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        path = self.convertToAbsolutePath(args.dir_name)
+
+        if self.graph.getNodeFromPath(path) is not None:
+            print("Directory already exists")
+            return
+
+        # TODO createFolder bugged
 
     @with_admin
     def do_update_group(self, line):

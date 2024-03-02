@@ -2,16 +2,14 @@
   {
     "name": "admin",
     "password": "$2b$12$4tdDvsvDSn9xcBHxv3OoYORR.PxX4ncfid8gb3iqnU76bu.jRQoiO",
-    "joinedGroups": ["group1", "group2"]
+    "joinedGroups": [
+      "group1",
+      "group2"
+    ]
   },
   {
-    "name": "user1",
-    "password": "$2b$12$rq9DjkSfiuvm8npGUr12WeVXAAEeFfOjXmFxgKR/uUGkJtJYy60Jm",
-    "joinedGroups": ["group1", "group2"]
-  },
-  {
-    "name": "user2",
-    "password": "$2b$12$UFlOrcpFOfB/YckcOD7Nn.NDxm4ozA7vF/n8HWCKvQ6LRyg6eGvl.",
-    "joinedGroups": ["group1"]
+    "name": "u1",
+    "password": "$2b$12$FskpUqz6eQ7dqXBBPSlBLu4FGMNVRKXp4MmuaLKWD5m9VgqXIOYP6",
+    "joinedGroups": []
   }
 ]
