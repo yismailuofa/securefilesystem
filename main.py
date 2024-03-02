@@ -41,11 +41,11 @@ class CLI(cmd.Cmd):
 
     def do_login(self, _):
         "Login to the system. Usage: login"
-        
+
         if self.user:
             print("Please logout first")
             return
-        
+
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
 
@@ -69,11 +69,11 @@ class CLI(cmd.Cmd):
 
     def do_register(self, _):
         "Register a new user. Usage: register"
-        
+
         if self.user:
             print("Please logout first")
             return
-        
+
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
         confirm_password = getpass.getpass("Confirm password: ")
@@ -112,7 +112,12 @@ class CLI(cmd.Cmd):
     def do_ls(self, _):
         "List files in the current directory"
         node = self.graph.getNodeFromPath(self.curr_dir)
-        print(*node.getReadableSubNodes(self.user.name, self.user.joinedGroups), sep="\n")
+        print(
+            *node.getReadableSubNodes(
+                self.user.name, self.user.joinedGroups, self.curr_dir
+            ),
+            sep="\n",
+        )
 
     @with_user
     def do_cd(self, line):
@@ -238,7 +243,7 @@ class CLI(cmd.Cmd):
                     parts.pop(i)
                     parts.pop(i - 1)
                     break
-                
+
             temp = "/".join(parts)
 
         if (node := self.graph.getNodeFromPath(temp)) is None:

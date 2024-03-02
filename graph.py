@@ -1,6 +1,7 @@
 import json
-from encrypt import decryptJson, encryptJson, encryptString, isEncrypted, decryptString
+from encrypt import decryptJson, encryptJson, isEncrypted
 from functools import wraps
+from fileio import readPath
 
 
 class Permission:
@@ -57,8 +58,10 @@ class Node:
             "children": [c.dump() for c in self.children],
         }
 
-    def getReadableSubNodes(self, user: str, groups: list[str]) -> list[str]:
+    def getReadableSubNodes(self, user: str, groups: list[str], path: str) -> list[str]:
         "Returns list of subnodes that are readable for a specific user"
+        results = {p.name: p for p in readPath(path)}
+
         readable = []
         for child in self.children:
             if child.isReadable(user, groups):
@@ -68,7 +71,7 @@ class Node:
                 else:
                     readable.append(child.name)
             else:
-                readable.append(encryptString(child.name))
+                readable.append(results[child.name])
 
         return readable
 
