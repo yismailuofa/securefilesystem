@@ -38,17 +38,19 @@ class CLI(cmd.Cmd):
 
         return wrapper
 
-    def do_login(self, line):
+    def do_login(self, _):
         "Login to the system. Usage: login"
-        
+
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
 
         if username not in self.users.users:
             print("User not found")
             return
-        
-        if not bcrypt.checkpw(password.encode(), self.users.users[username].password.encode()):
+
+        if not bcrypt.checkpw(
+            password.encode(), self.users.users[username].password.encode()
+        ):
             print("Invalid password")
             return
 
@@ -60,9 +62,9 @@ class CLI(cmd.Cmd):
 
         print(f"Logged in as {self.user.name}")
 
-    def do_register(self, line):
+    def do_register(self, _):
         "Register a new user. Usage: register"
-        
+
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
         confirm_password = getpass.getpass("Confirm password: ")
@@ -74,7 +76,7 @@ class CLI(cmd.Cmd):
         if password != confirm_password:
             print("Passwords don't match")
             return
-        
+
         hashedPass = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
         self.users.createUser(username, hashedPass.decode())
 
