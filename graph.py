@@ -71,7 +71,7 @@ class Node:
                 else:
                     readable.append(child.name)
             else:
-                readable.append(results[child.name])
+                readable.append(results[child.name].encryptedName)
 
         return readable
 
