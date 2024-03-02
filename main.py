@@ -21,6 +21,28 @@ class CLI(cmd.Cmd):
     curr_dir = "/"
     users = Users("json/users.example.json")
 
+    def convertToAbsolutePath(self, path: str) -> str:
+        # convert to absolute path by accounting for ../ and ./
+        if path.startswith("/"):
+            return path
+        else:
+            if self.user.isAdmin:
+                temp = f"/{path}"
+            else:
+                temp = f"{self.curr_dir}/{path}"
+            # split the path into parts
+            parts = temp.split("/")
+            # remove any ./
+            parts = [part for part in parts if part != "."]
+            # pop previous directory if we encounter a ../
+            for i in range(len(parts)):
+                if parts[i] == "..":
+                    parts.pop(i)
+                    parts.pop(i - 1)
+                    break
+
+            return "/".join(parts)
+
     def with_user(f):
         def wrapper(self, line):
             if self.user is None:
@@ -131,29 +153,9 @@ class CLI(cmd.Cmd):
             print("Invalid path")
             return
 
-        temp = ""
-        # convert to absolute path by accounting for ../ and ./
-        if args.path.startswith("/"):
-            temp = args.path
-        else:
-            if self.user.isAdmin:
-                temp = f"/{args.path}"
-            else:
-                temp = f"{self.curr_dir}/{args.path}"
-            # split the path into parts
-            parts = temp.split("/")
-            # remove any ./
-            parts = [part for part in parts if part != "."]
-            # pop previous directory if we encounter a ../
-            for i in range(len(parts)):
-                if parts[i] == "..":
-                    parts.pop(i)
-                    parts.pop(i - 1)
-                    break
+        path = self.convertToAbsolutePath(args.path)
 
-            temp = "/".join(parts)
-
-        if (node := self.graph.getNodeFromPath(temp)) is None:
+        if (node := self.graph.getNodeFromPath(path)) is None:
             print("Invalid path")
             return
         # now check if the user has access to the new directory
@@ -166,7 +168,7 @@ class CLI(cmd.Cmd):
             print("Not a directory")
             return
 
-        self.curr_dir = temp
+        self.curr_dir = path
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )
@@ -224,29 +226,9 @@ class CLI(cmd.Cmd):
         if (args := tryParse(parser, line)) is None:
             return
 
-        temp = ""
-        # convert to absolute path by accounting for ../ and ./
-        if args.file_path.startswith("/"):
-            temp = args.path
-        else:
-            if self.user.isAdmin:
-                temp = f"/{args.file_path}"
-            else:
-                temp = f"{self.curr_dir}/{args.file_path}"
-            # split the path into parts
-            parts = temp.split("/")
-            # remove any ./
-            parts = [part for part in parts if part != "."]
-            # pop previous directory if we encounter a ../
-            for i in range(len(parts)):
-                if parts[i] == "..":
-                    parts.pop(i)
-                    parts.pop(i - 1)
-                    break
+        path = self.convertToAbsolutePath(args.file_path)
 
-            temp = "/".join(parts)
-
-        if (node := self.graph.getNodeFromPath(temp)) is None:
+        if (node := self.graph.getNodeFromPath(path)) is None:
             print("Invalid path")
             return
 
@@ -254,7 +236,28 @@ class CLI(cmd.Cmd):
             print("Access denied")
             return
 
-        print(readFile(temp))
+        print(readFile(path))
+
+    @with_user
+    def do_mv(self, line):
+        "Rename a file or directory. Usage: mv <source> <name>"
+        parser = argparse.ArgumentParser(prog="mv")
+        parser.add_argument("source", type=str)
+        parser.add_argument("name", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        source = self.convertToAbsolutePath(args.source)
+
+        if (node := self.graph.getNodeFromPath(source)) is None:
+            print("Invalid source path")
+            return
+
+        if not node.isWritable(self.user.name, self.user.joinedGroups):
+            print("Access denied")
+            return
+
+        self.graph.renameNode(source, args.name)
 
     @with_admin
     def do_update_group(self, line):

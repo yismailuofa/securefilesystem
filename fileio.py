@@ -141,16 +141,14 @@ def renamePath(oldPath: str, name: str):
 
 
 if __name__ == "__main__":
-    writeFile("foo/bar/test.txt", "Hello, World!")
+    writeFile("foo/test.txt", "Hello, World!")
 
-    renamePath("foo/bar", "baz")
+    renamePath("foo/test.txt", "baz.txt")
 
-    print(readPath("foo/baz"))
+    print(readPath("foo"))
 
-    print(readFile("foo/baz/test.txt"))
+    # print(readFile("foo/baz/test.txt"))
 
-    removeFile("foo/baz/test.txt")
-
-    removePath("foo/baz")
+    removeFile("foo/baz.txt")
 
     removePath("foo")

@@ -12,7 +12,7 @@
   "allowedGroups": [],
   "children": [
     {
-      "name": "user1",
+      "name": "user3",
       "owner": "user1",
       "isFolder": true,
       "allowedUsers": [
@@ -31,7 +31,7 @@
       ],
       "children": [
         {
-          "name": "foo.txt",
+          "name": "bar.txt",
           "owner": "user1",
           "isFolder": false,
           "allowedUsers": [

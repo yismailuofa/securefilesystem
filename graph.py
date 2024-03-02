@@ -1,7 +1,7 @@
 import json
 from encrypt import decryptJson, encryptJson, isEncrypted
 from functools import wraps
-from fileio import readPath
+import fileio
 
 
 class Permission:
@@ -60,7 +60,7 @@ class Node:
 
     def getReadableSubNodes(self, user: str, groups: list[str], path: str) -> list[str]:
         "Returns list of subnodes that are readable for a specific user"
-        results = {p.name: p for p in readPath(path)}
+        results = {p.name: p for p in fileio.readPath(path)}
 
         readable = []
         for child in self.children:
@@ -158,6 +158,7 @@ class Graph:
 
         return node
 
+    @withDump
     def createFolder(
         self, path: str, currentUser: str, currentGroups: list[str]
     ) -> bool:
@@ -181,6 +182,7 @@ class Graph:
 
         return True
 
+    @withDump
     def createFile(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:
         "Creates a file at a specific path"
         path = path.split("/")[1:]
@@ -205,6 +207,7 @@ class Graph:
 
         return False
 
+    @withDump
     def makeReadableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
         "Makes a node readable for a specific user"
         # travel down the path and make nodes readable on the way
@@ -231,6 +234,7 @@ class Graph:
 
         return True
 
+    @withDump
     def makeWritableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
         "Makes a node writable for a specific user"
         # travel down the path and make nodes readable on the way
@@ -264,6 +268,7 @@ class Graph:
             node.allowedUsers.append(Permission(targetUser, True, True))
             return True
 
+    @withDump
     def makeReadableForGroup(
         self, path: str, currentUser: str, targetGroup: str
     ) -> bool:
@@ -292,6 +297,7 @@ class Graph:
 
         return True
 
+    @withDump
     def makeWritableForGroup(
         self, path: str, currentUser: str, targetGroup: str
     ) -> bool:
@@ -327,6 +333,7 @@ class Graph:
             node.allowedGroups.append(Permission(targetGroup, True, True))
             return True
 
+    @withDump
     def deleteGroup(self, groupName: str) -> bool:
         "Deletes a group from all nodes"
 
@@ -340,6 +347,25 @@ class Graph:
                 deleteGroupFromNode(child)
 
         deleteGroupFromNode(self.root)
+
+    @withDump
+    def renameNode(self, path: str, newName: str) -> bool:
+        "Renames a node"
+        tok = path.split("/")[1:]
+        node = self.root
+        for p in tok:
+            for child in node.children:
+                if child.name == p:
+                    node = child
+                    break
+            else:
+                return False
+
+        node.name = newName
+
+        fileio.renamePath(path, newName)
+
+        return True
 
 
 if __name__ == "__main__":
