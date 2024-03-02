@@ -12,7 +12,7 @@
   "allowedGroups": [],
   "children": [
     {
-      "name": "user1",
+      "name": "gAAAAABl40TIQQpJZlb_mJfqOIlsBbRjM5MY4kN4kdmYd51pqo4DZIVRGCVBZdvR_L-KxP53IEKZJmz2Qg62IWz-jVfapKlWVQ==",
       "owner": "user1",
       "isFolder": true,
       "allowedUsers": [
@@ -24,14 +24,14 @@
       ],
       "allowedGroups": [
         {
-          "name": "group1",
+          "name": "group2",
           "isRead": true,
           "isWrite": true
         }
       ],
       "children": [
         {
-          "name": "foo.txt",
+          "name": "gAAAAABl40TIf3UwjOjTCHi55mj8D-kXx46Am2FPqvvffDcVjEZy7D1a8uL91dii9TYHUpc-0WtEjxw9Y43ikMRLn2kxDhFZ1g==",
           "owner": "user1",
           "isFolder": false,
           "allowedUsers": [
@@ -47,7 +47,7 @@
       ]
     },
     {
-      "name": "user2",
+      "name": "gAAAAABl40U7lSacRhKA2vYzOeme7Gfk6q7DTm9n8mScel8xBl_of16PZYg0PfGsJo_CQ6yopweLR0L3h3zZZP9Ppnn6q_Yc7Q==",
       "owner": "user2",
       "isFolder": true,
       "allowedUsers": [
@@ -66,7 +66,7 @@
       ],
       "children": [
         {
-          "name": "foou2.txt",
+          "name": "gAAAAABl40U71QcxaQcAJI6cJQg0Upo-Q1HiXsXpgsQ28_qzLi6b6bfeEyLKkJw5qFA6JJveNeiPfEUzBWi7hBkI2ENdQ8zLnw==",
           "owner": "user2",
           "isFolder": false,
           "allowedUsers": [

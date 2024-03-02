@@ -4,6 +4,7 @@ import bcrypt
 import getpass
 from graph import Graph
 from user import Users
+from fileio import readFile
 
 from util import tryParse
 
@@ -40,7 +41,11 @@ class CLI(cmd.Cmd):
 
     def do_login(self, _):
         "Login to the system. Usage: login"
-
+        
+        if self.user:
+            print("Please logout first")
+            return
+        
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
 
@@ -64,7 +69,11 @@ class CLI(cmd.Cmd):
 
     def do_register(self, _):
         "Register a new user. Usage: register"
-
+        
+        if self.user:
+            print("Please logout first")
+            return
+        
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
         confirm_password = getpass.getpass("Confirm password: ")
@@ -103,7 +112,7 @@ class CLI(cmd.Cmd):
     def do_ls(self, _):
         "List files in the current directory"
         node = self.graph.getNodeFromPath(self.curr_dir)
-        print(node.getReadableSubNodes(self.user.name, self.user.joinedGroups))
+        print(*node.getReadableSubNodes(self.user.name, self.user.joinedGroups), sep="\n")
 
     @with_user
     def do_cd(self, line):
@@ -229,10 +238,10 @@ class CLI(cmd.Cmd):
                     parts.pop(i)
                     parts.pop(i - 1)
                     break
-
+                
             temp = "/".join(parts)
 
-        if (node := self.graph.getNodeFromPath(args.file_path)) is None:
+        if (node := self.graph.getNodeFromPath(temp)) is None:
             print("Invalid path")
             return
 
@@ -240,7 +249,7 @@ class CLI(cmd.Cmd):
             print("Access denied")
             return
 
-        print(node.contents)
+        print(readFile(temp))
 
     @with_admin
     def do_update_group(self, line):

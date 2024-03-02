@@ -27,12 +27,14 @@ def findPath(path: str, curr: str = FILE_PATH) -> Optional[str]:
     if not path:
         return curr
 
-    first, *rest = path.split("/")
-
+    first, *rest = [part for part in path.split("/") if part]
     for dir in os.listdir(curr):
         try:
             if decryptString(dir) == first:
-                return findPath("/".join(rest), os.path.join(curr, dir))
+                if len(rest) == 1:
+                    return findPath(rest[0], os.path.join(curr, dir))
+                else:
+                    return findPath("/".join(rest), os.path.join(curr, dir))
         except:
             pass
 

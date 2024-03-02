@@ -1,5 +1,5 @@
 import json
-from encrypt import decryptJson, encryptJson, encryptString, isEncrypted
+from encrypt import decryptJson, encryptJson, encryptString, isEncrypted, decryptString
 from functools import wraps
 
 
@@ -64,11 +64,11 @@ class Node:
             if child.isReadable(user, groups):
                 # if child is a folder, add a / to the end
                 if child.isFolder:
-                    readable.append(child.name + "/")
+                    readable.append(decryptString(child.name) + "/")
                 else:
-                    readable.append(child.name)
+                    readable.append(decryptString(child.name))
             else:
-                readable.append(encryptString(child.name))
+                readable.append(child.name)
 
         return readable
 
@@ -147,7 +147,7 @@ class Graph:
         node = self.root
         for p in path:
             for child in node.children:
-                if child.name == p:
+                if decryptString(child.name) == p:
                     node = child
                     break
             else:
