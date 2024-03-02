@@ -64,11 +64,11 @@ class Node:
             if child.isReadable(user, groups):
                 # if child is a folder, add a / to the end
                 if child.isFolder:
-                    readable.append(decryptString(child.name) + "/")
+                    readable.append(child.name + "/")
                 else:
-                    readable.append(decryptString(child.name))
+                    readable.append(child.name)
             else:
-                readable.append(child.name)
+                readable.append(encryptString(child.name))
 
         return readable
 
@@ -147,7 +147,7 @@ class Graph:
         node = self.root
         for p in path:
             for child in node.children:
-                if decryptString(child.name) == p:
+                if child.name == p:
                     node = child
                     break
             else:
