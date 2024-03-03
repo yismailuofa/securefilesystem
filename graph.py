@@ -1,6 +1,7 @@
 import json
 from encrypt import decryptJson, encryptJson, isEncrypted
 from functools import wraps
+import copy
 import fileio
 
 
@@ -163,7 +164,7 @@ class Graph:
         self, path: str, currentUser: str, currentGroups: list[str]
     ) -> bool:
         "Creates a folder at a specific path"
-        path = path.split("/")[1:]
+        path = [part for part in path.split("/") if part]
         node = self.root
         for p in path:
             for child in node.children:
@@ -175,9 +176,9 @@ class Graph:
                     return False
                 else:
                     # create a new folder, copying permissions from parent
-                    node.children.append(
-                        Node(p, node.owner, True, node.allowedUsers, node.allowedGroups)
-                    )
+                    child = copy.deepcopy(node)
+                    child.name = p
+                    node.children.append(child)
                     node = node.children[-1]
 
         return True
@@ -205,12 +206,10 @@ class Graph:
                     return False
                 else:
                     # create a new file, copying permissions from parent
-                    node.children.append(
-                        Node(
-                            p, node.owner, False, node.allowedUsers, node.allowedGroups
-                        )
-                    )
-                    node = node.children[-1]
+                    child = copy.deepcopy(node)
+                    child.name = p
+                    child.isFolder = False
+                    node.children.append(child)
                     return True
 
         return False
@@ -378,3 +377,4 @@ class Graph:
 
 if __name__ == "__main__":
     graph = Graph("json/permissions.example.json")
+    graph.createFolder("test/test1", "u1", [])

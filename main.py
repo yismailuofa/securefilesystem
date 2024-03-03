@@ -278,6 +278,7 @@ class CLI(cmd.Cmd):
             return
 
         # TODO createFolder bugged
+        self.graph.createFolder(path, self.user.name, [])
 
     @with_admin
     def do_update_group(self, line):
