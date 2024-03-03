@@ -24,6 +24,34 @@
       ],
       "allowedGroups": [],
       "children": []
+    },
+    {
+      "name": "u2",
+      "owner": "u2",
+      "isFolder": true,
+      "allowedUsers": [
+        {
+          "name": "u2",
+          "isRead": true,
+          "isWrite": true
+        }
+      ],
+      "allowedGroups": [],
+      "children": []
+    },
+    {
+      "name": "u1",
+      "owner": "u1",
+      "isFolder": true,
+      "allowedUsers": [
+        {
+          "name": "u1",
+          "isRead": true,
+          "isWrite": true
+        }
+      ],
+      "allowedGroups": [],
+      "children": []
     }
   ]
 }
