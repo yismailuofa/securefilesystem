@@ -349,14 +349,18 @@ class CLI(cmd.Cmd):
         cmd = input("Choose an option (1, 2, 3): ")
 
         if cmd == "1":
-            pass
+            node.allowedGroups.clear()
+            node.allowedUsers.clear()
         elif cmd == "2":
-            pass
+            for group in self.user.joinedGroups:
+                node.addGroup(group, True, True)
         elif cmd == "3":
-            pass
+            node.addUser("all", True, True)
         else:
             print("Invalid command")
             return
+        
+        self.graph.dump()
 
     def do_update_group(self, line):
         "Update an existing group. Usage update_group <group_name>"

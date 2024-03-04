@@ -86,6 +86,16 @@ class Node:
     def isOwner(self, user: User) -> bool:
         "Returns if a user is the owner of a node"
         return self.owner == user.name
+    
+    def addGroup(self, groupName: str, isRead: bool, isWrite: bool):
+        self.allowedGroups.append(
+            Permission(groupName, isRead=isRead, isWrite=isWrite)
+        )
+        
+    def addUser(self, user: str, isRead: bool, isWrite: bool):
+        self.allowedUsers.append(
+            Permission(user, isRead=isRead, isWrite=isWrite)
+        )
 
 
 class Graph:
