@@ -19,48 +19,29 @@ class CLI(cmd.Cmd):
 
     user = None
     graph = Graph("json/permissions.example.json")
-    curr_dir = "/"
+    curr_dir = ""
     users = Users("json/users.example.json")
 
     def convertToAbsolutePath(self, path: str) -> str:
-        # convert to absolute path by accounting for ../ and ./
-        if path.startswith("/"):
-            return path
+        "Converts a relative path to an absolute path"
+        "tilde (~) will reset to the root directory"
+        "otherwise, it will append to the current directory"
+
+        if path.startswith("~"):
+            path = path[1:]
         else:
-            if self.curr_dir == "/":
-                temp = f"/{path}"
-            else:
-                temp = f"{self.curr_dir}/{path}"
-            # split the path into parts
-            parts = temp.split("/")
-            # remove any ./
-            parts = [part for part in parts if part != "."]
-            # pop previous directory if we encounter a ../
-            for i in range(len(parts)):
-                if parts[i] == "..":
-                    parts.pop(i)
-                    parts.pop(i - 1)
-                    break
+            path = f"{self.curr_dir}/{path}"
 
-            return "/".join(parts)
+        parts = [p for p in path.split("/") if p]
+        out = []
 
-    def with_user(f):
-        def wrapper(self, line):
-            if self.user is None:
-                print("Please login first")
-                return
-            return f(self, line)
+        for part in parts:
+            if part == "..":
+                out.pop()
+            elif part != ".":
+                out.append(part)
 
-        return wrapper
-
-    def with_admin(f):
-        def wrapper(self, line):
-            if self.user is None or not self.user.isAdmin:
-                print("You need to be an admin to run this command")
-                return
-            return f(self, line)
-
-        return wrapper
+        return "/".join(out)
 
     def do_login(self, _):
         "Login to the system. Usage: login"
@@ -83,7 +64,7 @@ class CLI(cmd.Cmd):
             return
 
         self.user = self.users.users[username]
-        self.curr_dir = f"/{self.user.name}" if not self.user.isAdmin else "/"
+        self.curr_dir = f"{self.user.name}" if not self.user.isAdmin else ""
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )
@@ -134,41 +115,41 @@ class CLI(cmd.Cmd):
         "Quit the CLI"
         return True
 
-    @with_user
     def do_ls(self, _):
         "List files in the current directory"
-        node = self.graph.getNodeFromPath(self.curr_dir)
+        if self.user is None:
+            print("Please login first")
+            return
+
         print(
-            *node.getReadableSubNodes(
-                self.user.name, self.user.joinedGroups, self.curr_dir
-            ),
+            *self.graph.listDirectory(self.curr_dir, self.user),
             sep="\n",
         )
 
-    @with_user
     def do_cd(self, line):
         "Change the current directory"
+        if self.user is None:
+            print("Please login first")
+            return
+
         parser = argparse.ArgumentParser(prog="cd")
         parser.add_argument("path", type=str)
         if (args := tryParse(parser, line)) is None:
             return
 
-        if (node := self.graph.getNodeFromPath(args.path)) is None:
-            print("Invalid path")
-            return
-
         path = self.convertToAbsolutePath(args.path)
 
-        if (node := self.graph.getNodeFromPath(path)) is None:
+        if not (node := self.graph.getNodeFromPath(path)):
             print("Invalid path")
             return
+
         # now check if the user has access to the new directory
-        if not node.isReadable(self.user.name, self.user.joinedGroups):
+        if not node.isReadable(self.user):
             print("Access denied")
             return
 
         # now check if the node is a directory
-        if not node.isFolder:
+        if not fileio.isFolder(path):
             print("Not a directory")
             return
 
@@ -177,9 +158,11 @@ class CLI(cmd.Cmd):
             user=self.user.name, curr_dir=self.curr_dir
         )
 
-    @with_admin
     def do_create_group(self, line):
         "Create a new group. Usage: create_group <group_name>"
+        if self.user is None or not self.user.isAdmin:
+            print("You need to be an admin to run this command")
+            return
         parser = argparse.ArgumentParser(prog="create_group")
         parser.add_argument("group_name", type=str)
         if (args := tryParse(parser, line)) is None:
@@ -199,9 +182,11 @@ class CLI(cmd.Cmd):
                 f"Group {args.group_name} created with users: {self.users.getUsersInGroup(args.group_name)}"
             )
 
-    @with_admin
     def do_delete_group(self, line):
         "Delete a group. Usage: delete_group <group_name>"
+        if self.user is None or not self.user.isAdmin:
+            print("You need to be an admin to run this command")
+            return
         parser = argparse.ArgumentParser(prog="create_group")
         parser.add_argument("group_name", type=str)
         if (args := tryParse(parser, line)) is None:
@@ -217,14 +202,18 @@ class CLI(cmd.Cmd):
         self.graph.deleteGroup(args.group_name)
         print(f"Group {args.group_name} deleted")
 
-    @with_user
     def do_pwd(self, _):
         "Print the current working directory"
+        if self.user is None:
+            print("Please login first")
+            return
         print(self.curr_dir)
 
-    @with_user
     def do_cat(self, line):
         "Read the contents of a file. Usage: cat <file_path>"
+        if self.user is None:
+            print("Please login first")
+            return
         parser = argparse.ArgumentParser(prog="cat")
         parser.add_argument("file_path", type=str)
         if (args := tryParse(parser, line)) is None:
@@ -236,15 +225,18 @@ class CLI(cmd.Cmd):
             print("Invalid path")
             return
 
-        if not node.isReadable(self.user.name, self.user.joinedGroups):
+        if not node.isReadable(self.user):
             print("Access denied")
             return
 
         print(readFile(path))
 
-    @with_user
     def do_mv(self, line):
         "Rename a file or directory. Usage: mv <source> <name>"
+        if self.user is None:
+            print("Please login first")
+            return
+
         parser = argparse.ArgumentParser(prog="mv")
         parser.add_argument("source", type=str)
         parser.add_argument("name", type=str)
@@ -257,15 +249,18 @@ class CLI(cmd.Cmd):
             print("Invalid source path")
             return
 
-        if not node.isWritable(self.user.name, self.user.joinedGroups):
+        if not node.isWritable(self.user):
             print("Access denied")
             return
 
         self.graph.renameNode(source, args.name)
 
-    @with_user
     def do_mkdir(self, line):
         "Create a new directory. Usage: mkdir <dir_name>"
+        if self.user is None:
+            print("Please login first")
+            return
+
         parser = argparse.ArgumentParser(prog="mkdir")
         parser.add_argument("dir_name", type=str)
         if (args := tryParse(parser, line)) is None:
@@ -277,11 +272,14 @@ class CLI(cmd.Cmd):
             print("Directory already exists")
             return
 
-        self.graph.createFolder(path, self.user.name, self.user.joinedGroups)
-        
-    @with_user
+        self.graph.createFolder(path, self.user)
+
     def do_touch(self, line):
         "Create a new directory. Usage: touch <file_path>"
+        if self.user is None:
+            print("Please login first")
+            return
+
         parser = argparse.ArgumentParser(prog="mkdir")
         parser.add_argument("file_path", type=str)
         if (args := tryParse(parser, line)) is None:
@@ -293,55 +291,63 @@ class CLI(cmd.Cmd):
             print("File already exists")
             return
 
-        self.graph.createFile(path, self.user.name, self.user.joinedGroups)
+        if not self.graph.createFile(path, self.user):
+            print("File creation failed")
 
-    @with_user
     def do_echo(self, line):
         "Overwrite a file. Usage: echo <file_path> <content>"
+        if self.user is None:
+            print("Please login first")
+            return
+
         parser = argparse.ArgumentParser(prog="echo")
         parser.add_argument("file_path", type=str)
-        parser.add_argument("content", nargs='+', type=str)
+        parser.add_argument("content", nargs="+", type=str)
         if (args := tryParse(parser, line)) is None:
             return
 
-        content = ' '.join(args.content)
+        content = " ".join(args.content)
         path = self.convertToAbsolutePath(args.file_path)
-        
+
         if (node := self.graph.getNodeFromPath(path)) is None:
             print("File does not exist")
             return
-        
-        if not node.isWritable(self.user.name, self.user.joinedGroups):
+
+        if not node.isWritable(self.user):
             print("Access denied")
             return
-        
+
         fileio.writeFile(path, content)
         print(f"Content written to {args.file_path}")
-        
+
     def do_change_file_access(self, line):
         "Change a file's permissions. Usage: change_file_access <file_path>"
+        if self.user is None:
+            print("Please login first")
+            return
+
         parser = argparse.ArgumentParser(prog="change_file_access")
         parser.add_argument("file_path", type=str)
         if (args := tryParse(parser, line)) is None:
             return
-        
+
         path = self.convertToAbsolutePath(args.file_path)
-        
+
         if (node := self.graph.getNodeFromPath(path)) is None:
             print("File does not exist")
             return
-        
-        if not node.isOwner(self.user.name):
+
+        if not node.isOwner(self.user):
             print("You are not the owner of this file.")
             return
-        
+
         print("Change file permissions:")
         print("1. Only the owner can read/write.")
         print("2. All groups that the owner is a part of can read/write.")
         print("3. All users can read/write.")
-        
+
         cmd = input("Choose an option (1, 2, 3): ")
-        
+
         if cmd == "1":
             pass
         elif cmd == "2":
@@ -351,11 +357,12 @@ class CLI(cmd.Cmd):
         else:
             print("Invalid command")
             return
-        
-        
-    @with_admin
+
     def do_update_group(self, line):
         "Update an existing group. Usage update_group <group_name>"
+        if self.user is None or not self.user.isAdmin:
+            print("You need to be an admin to run this command")
+            return
         parser = argparse.ArgumentParser(prog="create_group")
         parser.add_argument("group_name", type=str)
         if (args := tryParse(parser, line)) is None:

@@ -7,8 +7,9 @@ FILE_PATH = "files/"
 
 
 class PathReadResult:
-    def __init__(self, maybeEncryptedName) -> None:
+    def __init__(self, maybeEncryptedName, isFolder=False) -> None:
         self.encryptedName = maybeEncryptedName
+        self.isFolder = isFolder
         try:
             self.name = decryptString(maybeEncryptedName)
         except:
@@ -38,6 +39,17 @@ def findPath(path: str, curr: str = FILE_PATH) -> Optional[str]:
     return None
 
 
+def isFolder(path) -> bool:
+    """Given a non-encrypted path, return True if the path is a directory
+    If the path does not exist, return False
+    """
+
+    if not (path := findPath(path)):
+        return False
+
+    return os.path.isdir(path)
+
+
 def makePath(path: str, curr: str = FILE_PATH, isFile: bool = False) -> str:
     """Given a non-encrypted path, create the encrypted path and return it.
     If the parts of the path do not exist, create them"""
@@ -63,7 +75,7 @@ def makePath(path: str, curr: str = FILE_PATH, isFile: bool = False) -> str:
     return makePath("/".join(rest), newDir, isFile)
 
 
-def readFile(path: str) -> str:
+def readFile(path) -> str:
     """Given a non-encrypted path, return the contents of the file"""
 
     if not (path := findPath(path)):
@@ -75,7 +87,7 @@ def readFile(path: str) -> str:
         return decryptString(f.read().decode())
 
 
-def readPath(path: str) -> list[PathReadResult]:
+def readPath(path) -> list[PathReadResult]:
     """Given a non-encrypted path, return the contents of the directory"""
 
     if not (path := findPath(path)):
@@ -83,7 +95,7 @@ def readPath(path: str) -> list[PathReadResult]:
     elif os.path.isfile(path):
         raise NotADirectoryError
 
-    return [PathReadResult(encryptedName) for encryptedName in os.listdir(path)]
+    return [PathReadResult(dir.name, dir.is_dir()) for dir in os.scandir(path)]
 
 
 def writeFile(path: str, contents: str):
@@ -98,7 +110,7 @@ def writeFile(path: str, contents: str):
         f.write(encryptString(contents).encode())
 
 
-def removeFile(path: str):
+def removeFile(path):
     """Given a non-encrypted path, remove the file
     If the file does not exist, raise FileNotFoundError
     """
@@ -111,7 +123,7 @@ def removeFile(path: str):
     os.remove(path)
 
 
-def removePath(path: str):
+def removePath(path):
     """Given a non-encrypted path, remove the directory
     If the directory does not exist, raise FileNotFoundError
     The directory must be empty.
@@ -125,7 +137,7 @@ def removePath(path: str):
     os.rmdir(path)
 
 
-def renamePath(oldPath: str, name: str):
+def renamePath(oldPath, name: str):
     """Given a non-encrypted old path and a non-encrypted new path, rename the directory
     If the directory does not exist, raise FileNotFoundError
     """
@@ -141,15 +153,4 @@ def renamePath(oldPath: str, name: str):
 
 
 if __name__ == "__main__":
-    # writeFile("u1/test.txt", "Hello, World!")
-
-    # renamePath("foo/test.txt", "baz.txt")
-
-    # print(readPath("foo"))
-
-    # # print(readFile("foo/baz/test.txt"))
-
-    # removeFile("foo/baz.txt")
-
-    # removePath("foo")
-    pass
+    print(readPath("u1"))

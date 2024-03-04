@@ -11,7 +11,7 @@ def key():
         return key
 
 
-def encryptJson(data: dict, outFile: str) -> bytes:
+def encryptJson(data, outFile: str):
     fernet = Fernet(key())
 
     data = json.dumps(data).encode()
