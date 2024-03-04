@@ -297,17 +297,14 @@ class CLI(cmd.Cmd):
 
     @with_user
     def do_echo(self, line):
-        "Overwrite a file. Usage echo <file_path> <content>"
+        "Overwrite a file. Usage: echo <file_path> <content>"
         parser = argparse.ArgumentParser(prog="echo")
         parser.add_argument("file_path", type=str)
         parser.add_argument("content", nargs='+', type=str)
         if (args := tryParse(parser, line)) is None:
             return
 
-        # Retrieve content
         content = ' '.join(args.content)
-
-        # Write content to file
         path = self.convertToAbsolutePath(args.file_path)
         
         if (node := self.graph.getNodeFromPath(path)) is None:
@@ -320,6 +317,40 @@ class CLI(cmd.Cmd):
         
         fileio.writeFile(path, content)
         print(f"Content written to {args.file_path}")
+        
+    def do_change_file_access(self, line):
+        "Change a file's permissions. Usage: change_file_access <file_path>"
+        parser = argparse.ArgumentParser(prog="change_file_access")
+        parser.add_argument("file_path", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+        
+        path = self.convertToAbsolutePath(args.file_path)
+        
+        if (node := self.graph.getNodeFromPath(path)) is None:
+            print("File does not exist")
+            return
+        
+        if not node.isOwner(self.user.name):
+            print("You are not the owner of this file.")
+            return
+        
+        print("Change file permissions:")
+        print("1. Only the owner can read/write.")
+        print("2. All groups that the owner is a part of can read/write.")
+        print("3. All users can read/write.")
+        
+        cmd = input("Choose an option (1, 2, 3): ")
+        
+        if cmd == "1":
+            pass
+        elif cmd == "2":
+            pass
+        elif cmd == "3":
+            pass
+        else:
+            print("Invalid command")
+            return
         
         
     @with_admin
