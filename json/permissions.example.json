@@ -45,7 +45,27 @@
           "children": []
         },
         {
-          "name": "foo",
+          "name": "bar.txt",
+          "owner": "u1",
+          "isFolder": false,
+          "allowedUsers": [
+            {
+              "name": "u1",
+              "isRead": true,
+              "isWrite": true
+            }
+          ],
+          "allowedGroups": [
+            {
+              "name": "group1",
+              "isRead": true,
+              "isWrite": true
+            }
+          ],
+          "children": []
+        },
+        {
+          "name": "folder",
           "owner": "u1",
           "isFolder": true,
           "allowedUsers": [
@@ -58,7 +78,7 @@
           "allowedGroups": [],
           "children": [
             {
-              "name": "bar.txt",
+              "name": "test.txt",
               "owner": "u1",
               "isFolder": false,
               "allowedUsers": [

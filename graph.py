@@ -229,7 +229,10 @@ class Graph:
                     
                     # create path in OS
                     os_path += node.name
-                    fileio.makePath(os_path, isFile = True if i == (len(path) - 1) else False)
+                    if i == (len(path) - 1):
+                        fileio.writeFile(os_path, "")
+                    else:
+                        fileio.makePath(os_path)
                     os_path += "/"
                     return True
 
