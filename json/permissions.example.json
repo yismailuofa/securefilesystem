@@ -43,6 +43,35 @@
           ],
           "allowedGroups": [],
           "children": []
+        },
+        {
+          "name": "foo",
+          "owner": "u1",
+          "isFolder": true,
+          "allowedUsers": [
+            {
+              "name": "u1",
+              "isRead": true,
+              "isWrite": true
+            }
+          ],
+          "allowedGroups": [],
+          "children": [
+            {
+              "name": "bar.txt",
+              "owner": "u1",
+              "isFolder": false,
+              "allowedUsers": [
+                {
+                  "name": "u1",
+                  "isRead": true,
+                  "isWrite": true
+                }
+              ],
+              "allowedGroups": [],
+              "children": []
+            }
+          ]
         }
       ]
     },

@@ -1,5 +1,5 @@
 import json
-from encrypt import decryptJson, encryptJson, isEncrypted
+from encrypt import decryptJson, encryptJson, isEncrypted, encryptString
 from functools import wraps
 import copy
 import fileio
@@ -165,11 +165,13 @@ class Graph:
     ) -> bool:
         "Creates a folder at a specific path"
         path = [part for part in path.split("/") if part]
+        os_path = ""
         node = self.root
         for p in path:
             for child in node.children:
                 if child.name == p:
                     node = child
+                    os_path += node.name + "/"
                     break
             else:
                 if not node.isWritable(currentUser, currentGroups):
@@ -178,8 +180,15 @@ class Graph:
                     # create a new folder, copying permissions from parent
                     child = copy.deepcopy(node)
                     child.name = p
+                    child.children.clear()
+                    child.allowedGroups.clear()
                     node.children.append(child)
                     node = node.children[-1]
+                    
+                    # create path in OS
+                    os_path += node.name
+                    fileio.makePath(os_path)
+                    os_path += "/"
 
         return True
 
@@ -194,12 +203,17 @@ class Graph:
     @withDump
     def createFile(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:
         "Creates a file at a specific path"
-        path = path.split("/")[1:]
+        path = [part for part in path.split("/") if part]
         node = self.root
-        for p in path:
+        os_path = ""
+        for i in range(len(path)):
+            p = path[i]
+            print(f"os path: {os_path}")
+            print(f"node: {node}")
             for child in node.children:
                 if child.name == p:
                     node = child
+                    os_path += node.name + "/"
                     break
             else:
                 if not node.isWritable(currentUser, currentGroups):
@@ -208,8 +222,15 @@ class Graph:
                     # create a new file, copying permissions from parent
                     child = copy.deepcopy(node)
                     child.name = p
-                    child.isFolder = False
+                    child.children.clear()
+                    child.isFolder = False if i == (len(path) - 1) else True
                     node.children.append(child)
+                    node = node.children[-1]
+                    
+                    # create path in OS
+                    os_path += node.name
+                    fileio.makePath(os_path, isFile = True if i == (len(path) - 1) else False)
+                    os_path += "/"
                     return True
 
         return False

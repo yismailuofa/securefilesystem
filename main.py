@@ -277,8 +277,23 @@ class CLI(cmd.Cmd):
             print("Directory already exists")
             return
 
-        # TODO createFolder bugged
-        self.graph.createFolder(path, self.user.name, [])
+        self.graph.createFolder(path, self.user.name, self.user.joinedGroups)
+        
+    @with_user
+    def do_touch(self, line):
+        "Create a new directory. Usage: touch <file_path>"
+        parser = argparse.ArgumentParser(prog="mkdir")
+        parser.add_argument("file_path", type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        path = self.convertToAbsolutePath(args.file_path)
+
+        if self.graph.getNodeFromPath(path) is not None:
+            print("File already exists")
+            return
+
+        self.graph.createFile(path, self.user.name, self.user.joinedGroups)
 
     @with_admin
     def do_update_group(self, line):

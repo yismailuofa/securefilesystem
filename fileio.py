@@ -48,7 +48,9 @@ def makePath(path: str, curr: str = FILE_PATH, isFile: bool = False) -> str:
     first, *rest = path.split("/")
 
     if not rest and isFile:
-        return os.path.join(curr, encryptString(first))
+        filePath = os.path.join(curr, encryptString(first))
+        with open(filePath, "a"):
+            os.utime(filePath, None)
 
     for dir in os.listdir(curr):
         try:
