@@ -208,8 +208,6 @@ class Graph:
         os_path = ""
         for i in range(len(path)):
             p = path[i]
-            print(f"os path: {os_path}")
-            print(f"node: {node}")
             for child in node.children:
                 if child.name == p:
                     node = child
