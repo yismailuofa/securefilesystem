@@ -55,7 +55,7 @@ class Node:
 
     def isReadable(self, user: User) -> bool:
         "Returns if a node is readable for a specific user"
-        if self.isOwner(user):
+        if self.isOwner(user) or user.isAdmin:
             return True
 
         for permission in self.allowedUsers:
@@ -70,7 +70,7 @@ class Node:
 
     def isWritable(self, user: User) -> bool:
         "Returns if a node is writable for a specific user"
-        if self.isOwner(user):
+        if self.isOwner(user) or user.isAdmin:
             return True
 
         for permission in self.allowedUsers:
@@ -129,7 +129,7 @@ class Graph:
         results = fileio.readPath(path)
         out = []
         for res in results:
-            resNode = self.getNodeFromPath(f"{path}/{res.name}")
+            resNode = self.getNodeFromPath("/".join(p for p in [path, res.name] if p))
 
             if resNode:
                 name = ""

@@ -36,7 +36,7 @@ class CLI(cmd.Cmd):
         out = []
 
         for part in parts:
-            if part == "..":
+            if part == ".." and out:
                 out.pop()
             elif part != ".":
                 out.append(part)

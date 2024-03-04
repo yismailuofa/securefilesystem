@@ -16,7 +16,7 @@ class PathReadResult:
             self.name = maybeEncryptedName
 
     def __repr__(self) -> str:
-        return f"PathReadResult(name={self.name}, encryptedName={self.encryptedName})"
+        return f"PathReadResult(name={self.name}, encryptedName={self.encryptedName}) isFolder={self.isFolder}"
 
 
 def findPath(path: str, curr: str = FILE_PATH) -> Optional[str]:
