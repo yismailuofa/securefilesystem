@@ -59,7 +59,7 @@ class Node:
             return True
 
         for permission in self.allowedUsers:
-            if permission.name == user.name and permission.isRead:
+            if permission.name in [user.name, "all"] and permission.isRead:
                 return True
 
         for permission in self.allowedGroups:
@@ -74,7 +74,7 @@ class Node:
             return True
 
         for permission in self.allowedUsers:
-            if permission.name == user.name and permission.isWrite:
+            if permission.name in [user.name, "all"] and permission.isWrite:
                 return True
 
         for permission in self.allowedGroups:
