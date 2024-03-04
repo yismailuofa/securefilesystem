@@ -377,4 +377,3 @@ class Graph:
 
 if __name__ == "__main__":
     graph = Graph("json/permissions.example.json")
-    graph.createFolder("test/test1", "u1", [])

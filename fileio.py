@@ -24,7 +24,7 @@ def findPath(path: str, curr: str = FILE_PATH) -> Optional[str]:
     If no match is found, return None
     """
 
-    if not path:
+    if not path or path == "/":
         return curr
 
     first, *rest = [part for part in path.split("/") if part]

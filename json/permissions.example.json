@@ -22,8 +22,29 @@
           "isWrite": true
         }
       ],
-      "allowedGroups": [],
-      "children": []
+      "allowedGroups": [
+        {
+          "name": "group1",
+          "isRead": true,
+          "isWrite": true
+        }
+      ],
+      "children": [
+        {
+          "name": "foo.txt",
+          "owner": "u1",
+          "isFolder": false,
+          "allowedUsers": [
+            {
+              "name": "u1",
+              "isRead": true,
+              "isWrite": true
+            }
+          ],
+          "allowedGroups": [],
+          "children": []
+        }
+      ]
     },
     {
       "name": "u2",
@@ -36,22 +57,29 @@
           "isWrite": true
         }
       ],
-      "allowedGroups": [],
-      "children": []
-    },
-    {
-      "name": "u1",
-      "owner": "u1",
-      "isFolder": true,
-      "allowedUsers": [
+      "allowedGroups": [
         {
-          "name": "u1",
+          "name": "group1",
           "isRead": true,
           "isWrite": true
         }
       ],
-      "allowedGroups": [],
-      "children": []
+      "children": [
+        {
+          "name": "bar.txt",
+          "owner": "u2",
+          "isFolder": false,
+          "allowedUsers": [
+            {
+              "name": "u2",
+              "isRead": true,
+              "isWrite": true
+            }
+          ],
+          "allowedGroups": [],
+          "children": []
+        }
+      ]
     }
   ]
 }
