@@ -295,6 +295,33 @@ class CLI(cmd.Cmd):
 
         self.graph.createFile(path, self.user.name, self.user.joinedGroups)
 
+    @with_user
+    def do_echo(self, line):
+        "Overwrite a file. Usage echo <file_path> <content>"
+        parser = argparse.ArgumentParser(prog="echo")
+        parser.add_argument("file_path", type=str)
+        parser.add_argument("content", nargs='+', type=str)
+        if (args := tryParse(parser, line)) is None:
+            return
+
+        # Retrieve content
+        content = ' '.join(args.content)
+
+        # Write content to file
+        path = self.convertToAbsolutePath(args.file_path)
+        
+        if (node := self.graph.getNodeFromPath(path)) is None:
+            print("File does not exist")
+            return
+        
+        if not node.isWritable(self.user.name, self.user.joinedGroups):
+            print("Access denied")
+            return
+        
+        fileio.writeFile(path, content)
+        print(f"Content written to {args.file_path}")
+        
+        
     @with_admin
     def do_update_group(self, line):
         "Update an existing group. Usage update_group <group_name>"
