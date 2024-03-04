@@ -3,18 +3,14 @@
     "name": "admin",
     "password": "$2b$12$4tdDvsvDSn9xcBHxv3OoYORR.PxX4ncfid8gb3iqnU76bu.jRQoiO",
     "joinedGroups": [
-      "group1",
-      "group2"
+      "g1"
     ]
   },
   {
     "name": "u1",
-    "password": "$2b$12$4/jJVca5JSsxQxLXc7NWv.wLSJK3TDEK8b7rAzmPKAqa9Y/LjxM8m",
-    "joinedGroups": []
-  },
-  {
-    "name": "u2",
-    "password": "$2b$12$/bVeBxa0HTwGHJ5mEMakguUtYZ/pF0rfvX2i53lm6/DRtmNQY0NCi",
-    "joinedGroups": []
+    "password": "$2b$12$hzDp4WoQ0TiktNF0gplLb.wXaFocOONuc0YtNHpz.0W2fKDXDtGCu",
+    "joinedGroups": [
+      "g1"
+    ]
   }
 ]

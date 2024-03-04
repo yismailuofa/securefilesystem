@@ -1,4 +1,3 @@
-from functools import wraps
 import json
 
 from encrypt import decryptJson, encryptJson, isEncrypted
@@ -40,31 +39,19 @@ class Users:
     def dump(self):
         "Dumps users to a file, should be called on exit"
 
-        data = [user.dump() for _, user in self.users.items()]
+        data = [user.dump() for user in self.users.values()]
 
         if self.isEncrypted:
-            encryptJson(self.jsonPath, data)
+            encryptJson(data, self.jsonPath)
         else:
             with open(self.jsonPath, "w") as f:
                 json.dump(data, f, indent=2)
-
-    def withDump(func):
-        "Decorator to dump graph after function call"
-
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            result = func(self, *args, **kwargs)
-            self.dump()
-            return result
-
-        return wrapper
 
     def getUsersInGroup(self, groupName: str):
         return [
             name for name, user in self.users.items() if groupName in user.joinedGroups
         ]
 
-    @withDump
     def addUsersToGroup(self, groupName: str, added_users: list[str]):
         users_added = False
         for user in added_users:
@@ -81,9 +68,10 @@ class Users:
 
             print(f"Added {user} to {groupName}")
 
+        self.dump()
+
         return True
 
-    @withDump
     def deleteUsersFromGroup(self, groupName: str, deleted_users: list[str]):
         for user in deleted_users:
             if user not in self.users:
@@ -101,11 +89,14 @@ class Users:
             self.users[user].joinedGroups.remove(groupName)
             print(f"Removed {user} from {groupName}")
 
-    @withDump
+        self.dump()
+
     def createUser(self, name: str, password: str):
         self.users[name] = User(name, password)
 
         print(f"User {name} created")
+
+        self.dump()
 
 
 if __name__ == "__main__":

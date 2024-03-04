@@ -1,8 +1,8 @@
 import json
-from encrypt import decryptJson, encryptJson, isEncrypted, encryptString
-from functools import wraps
-import copy
+from typing import Optional
+from encrypt import decryptJson, encryptJson, isEncrypted
 import fileio
+from user import User
 
 
 class Permission:
@@ -28,15 +28,11 @@ class Node:
         self,
         name: str,
         owner: str,
-        isFolder: bool,
         allowedUsers: list[dict] = [],
         allowedGroups: list[dict] = [],
-        children=[],
     ) -> None:
         self.name = name
         self.owner = owner
-        self.children = [Node(**child) for child in children]
-        self.isFolder = isFolder
         self.allowedUsers: list[Permission] = [
             Permission(**user) for user in allowedUsers
         ]
@@ -45,7 +41,7 @@ class Node:
         ]
 
     def __repr__(self) -> str:
-        return f"Node(name={self.name}, isFolder={self.isFolder}, allowedUsers={[p.name for p in self.allowedUsers]}, allowedGroups={[p.name for p in self.allowedGroups]}, children={[c.name for c in self.children]})"
+        return f"Node(name={self.name}, allowedUsers={[p.name for p in self.allowedUsers]}, allowedGroups={[p.name for p in self.allowedGroups]}"
 
     def dump(self) -> dict:
         "Dumps node to a dictionary"
@@ -53,56 +49,43 @@ class Node:
         return {
             "name": self.name,
             "owner": self.owner,
-            "isFolder": self.isFolder,
             "allowedUsers": [p.dump() for p in self.allowedUsers],
             "allowedGroups": [p.dump() for p in self.allowedGroups],
-            "children": [c.dump() for c in self.children],
         }
 
-    def getReadableSubNodes(self, user: str, groups: list[str], path: str) -> list[str]:
-        "Returns list of subnodes that are readable for a specific user"
-        results = {p.name: p for p in fileio.readPath(path)}
-
-        readable = []
-        for child in self.children:
-            if child.isReadable(user, groups):
-                # if child is a folder, add a / to the end
-                if child.isFolder:
-                    readable.append(child.name + "/")
-                else:
-                    readable.append(child.name)
-            else:
-                readable.append(results[child.name].encryptedName)
-
-        return readable
-
-    def isReadable(self, user: str, groups: list[str]) -> bool:
+    def isReadable(self, user: User) -> bool:
         "Returns if a node is readable for a specific user"
+        if self.isOwner(user) or user.isAdmin:
+            return True
+
         for permission in self.allowedUsers:
-            if permission.name == user and permission.isRead:
+            if permission.name == user.name and permission.isRead:
                 return True
 
         for permission in self.allowedGroups:
-            if permission.name in groups and permission.isRead:
+            if permission.name in user.joinedGroups and permission.isRead:
                 return True
 
         return False
 
-    def isWritable(self, user: str, groups: list[str]) -> bool:
+    def isWritable(self, user: User) -> bool:
         "Returns if a node is writable for a specific user"
+        if self.isOwner(user) or user.isAdmin:
+            return True
+
         for permission in self.allowedUsers:
-            if permission.name == user and permission.isWrite:
+            if permission.name == user.name and permission.isWrite:
                 return True
 
         for permission in self.allowedGroups:
-            if permission.name in groups and permission.isWrite:
+            if permission.name in user.joinedGroups and permission.isWrite:
                 return True
 
         return False
 
-    def isOwner(self, user: str) -> bool:
+    def isOwner(self, user: User) -> bool:
         "Returns if a user is the owner of a node"
-        return self.owner == user
+        return self.owner == user.name
 
 
 class Graph:
@@ -116,12 +99,12 @@ class Graph:
             else:
                 graph = json.load(f)
 
-            self.root = Node(**graph)
+            self.nodes = {node["name"]: Node(**node) for node in graph}
 
     def dump(self):
         "Dumps graph to a file, should be called on exit"
 
-        data = self.root.dump()
+        data = [node.dump() for node in self.nodes.values()]
 
         if self.isEncrypted:
             encryptJson(data, self.jsonPath)
@@ -129,270 +112,124 @@ class Graph:
             with open(self.jsonPath, "w") as f:
                 json.dump(data, f, indent=2)
 
-    def withDump(func):
-        "Decorator to dump graph after function call"
-
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            result = func(self, *args, **kwargs)
-            self.dump()
-            return result
-
-        return wrapper
-
-    @withDump
-    def getNodeFromPath(self, path: str) -> Node:
+    def getNodeFromPath(self, path: str) -> Optional[Node]:
         "Returns node from path"
 
-        if path == "/":
-            return self.root
+        return self.nodes.get(path, None)
 
-        path = path.split("/")[1:]
-        node = self.root
-        for p in path:
-            for child in node.children:
-                if child.name == p:
-                    node = child
-                    break
-            else:
-                return None
+    def listDirectory(self, path: str, user: User) -> list[str]:
+        "Lists the directory at a specific path"
 
-        return node
+        if not (node := self.getNodeFromPath(path)):
+            return []
 
-    @withDump
-    def createFolder(
-        self, path: str, currentUser: str, currentGroups: list[str]
-    ) -> bool:
-        "Creates a folder at a specific path"
-        path = [part for part in path.split("/") if part]
-        os_path = ""
-        node = self.root
-        for p in path:
-            for child in node.children:
-                if child.name == p:
-                    node = child
-                    os_path += node.name + "/"
-                    break
-            else:
-                if not node.isWritable(currentUser, currentGroups):
-                    return False
+        if not node.isReadable(user):
+            return []
+
+        results = fileio.readPath(path)
+        out = []
+        for res in results:
+            resNode = self.getNodeFromPath("/".join(p for p in [path, res.name] if p))
+
+            if resNode:
+                name = ""
+                if resNode.isReadable(user):
+                    name = res.name
                 else:
-                    # create a new folder, copying permissions from parent
-                    child = copy.deepcopy(node)
-                    child.name = p
-                    child.children.clear()
-                    child.allowedGroups.clear()
-                    node.children.append(child)
-                    node = node.children[-1]
-                    
-                    # create path in OS
-                    os_path += node.name
-                    fileio.makePath(os_path)
-                    os_path += "/"
+                    name = res.encryptedName
 
-        return True
+                if res.isFolder:
+                    name += "/"
 
-    @withDump
+                out.append(name)
+
+        return out
+
     def initUserDirectory(self, user: str):
         "Initializes the user directory"
-        self.root.children.append(
-            Node(user, user, True, [Permission(user, True, True).dump()], [])
-        )
-        fileio.makePath(user, isFile=False)
 
-    @withDump
-    def createFile(self, path: str, currentUser: str, currentGroups: list[str]) -> bool:
+        self.nodes[user] = Node(user, user, [Permission(user, True, True).dump()])
+
+        fileio.makePath(user)
+
+        self.dump()
+
+    def createFile(self, path: str, user: User) -> bool:
         "Creates a file at a specific path"
-        path = [part for part in path.split("/") if part]
-        node = self.root
-        os_path = ""
-        for i in range(len(path)):
-            p = path[i]
-            for child in node.children:
-                if child.name == p:
-                    node = child
-                    os_path += node.name + "/"
-                    break
-            else:
-                if not node.isWritable(currentUser, currentGroups):
-                    return False
-                else:
-                    # create a new file, copying permissions from parent
-                    child = copy.deepcopy(node)
-                    child.name = p
-                    child.children.clear()
-                    child.isFolder = False if i == (len(path) - 1) else True
-                    node.children.append(child)
-                    node = node.children[-1]
-                    
-                    # create path in OS
-                    os_path += node.name
-                    if i == (len(path) - 1):
-                        fileio.writeFile(os_path, "")
-                    else:
-                        fileio.makePath(os_path)
-                    os_path += "/"
-                    return True
 
-        return False
+        parentPath = "/".join(path.split("/")[:-1])
 
-    @withDump
-    def makeReadableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
-        "Makes a node readable for a specific user"
-        # travel down the path and make nodes readable on the way
-        path = path.split("/")[1:]
-        node = self.root
-        for p in path:
-            for child in node.children:
-                if child.name == p:
-                    if not child.isOwner(currentUser):
-                        return False
-                    else:
-                        for permission in child.allowedUsers:
-                            if permission.name == targetUser:
-                                permission.isRead = True
-                                return True
-                        else:
-                            child.allowedUsers.append(
-                                Permission(targetUser, True, False)
-                            )
-                    node = child
-                    break
-            else:
-                raise ValueError(f"Path {path} not found")
+        if not (parent := self.getNodeFromPath(parentPath)):
+            return False
+
+        if not parent.isWritable(user):
+            return False
+
+        fileio.writeFile(path, "")
+
+        allowedGroups = []
+        allowedUsers = [
+            Permission(user.name, True, True).dump(),
+            Permission(parent.owner, True, True).dump(),
+        ]
+
+        self.nodes[path] = Node(path, user.name, allowedUsers, allowedGroups)
+
+        self.dump()
 
         return True
 
-    @withDump
-    def makeWritableForUser(self, path: str, currentUser: str, targetUser: str) -> bool:
-        "Makes a node writable for a specific user"
-        # travel down the path and make nodes readable on the way
-        path = path.split("/")[1:]
-        node = self.root
-        for p in path:
-            for child in node.children:
-                if child.name == p:
-                    if not child.isOwner(currentUser):
-                        return False
-                    else:
-                        for permission in child.allowedUsers:
-                            if permission.name == targetUser:
-                                permission.isRead = True
-                                return True
-                        else:
-                            child.allowedUsers.append(
-                                Permission(targetUser, True, False)
-                            )
-                    node = child
-                    break
-            else:
-                raise ValueError(f"Path {path} not found")
+    def createFolder(self, path: str, user: User) -> bool:
+        "Creates a folder at a specific path"
 
-        # make the last node writable
-        for permission in node.allowedUsers:
-            if permission.name == targetUser:
-                permission.isWrite = True
-                return True
-        else:
-            node.allowedUsers.append(Permission(targetUser, True, True))
-            return True
+        parentPath = "/".join(path.split("/")[:-1])
 
-    @withDump
-    def makeReadableForGroup(
-        self, path: str, currentUser: str, targetGroup: str
-    ) -> bool:
-        "Makes a node readable for a specific group"
-        # travel down the path and make nodes readable on the way
-        path = path.split("/")[1:]
-        node = self.root
-        for p in path:
-            for child in node.children:
-                if child.name == p:
-                    if not child.isOwner(currentUser):
-                        return False
-                    else:
-                        for permission in child.allowedGroups:
-                            if permission.name == targetGroup:
-                                permission.isRead = True
-                                return True
-                        else:
-                            child.allowedGroups.append(
-                                Permission(targetGroup, True, False)
-                            )
-                    node = child
-                    break
-            else:
-                raise ValueError(f"Path {path} not found")
+        if not (parent := self.getNodeFromPath(parentPath)):
+            return False
+
+        if not parent.isWritable(user):
+            return False
+
+        fileio.makePath(path, isFile=False)
+
+        allowedGroups = []
+        allowedUsers = [
+            Permission(user.name, True, True).dump(),
+            Permission(parent.owner, True, True).dump(),
+        ]
+
+        self.nodes[path] = Node(path, user.name, allowedUsers, allowedGroups)
+
+        self.dump()
 
         return True
 
-    @withDump
-    def makeWritableForGroup(
-        self, path: str, currentUser: str, targetGroup: str
-    ) -> bool:
-        "Makes a node writable for a specific group"
-        # travel down the path and make nodes readable on the way
-        path = path.split("/")[1:]
-        node = self.root
-        for p in path:
-            for child in node.children:
-                if child.name == p:
-                    if not child.isOwner(currentUser):
-                        return False
-                    else:
-                        for permission in child.allowedGroups:
-                            if permission.name == targetGroup:
-                                permission.isRead = True
-                                return True
-                        else:
-                            child.allowedGroups.append(
-                                Permission(targetGroup, True, False)
-                            )
-                    node = child
-                    break
-            else:
-                raise ValueError(f"Path {path} not found")
-
-        # make the last node writable
-        for permission in node.allowedGroups:
-            if permission.name == targetGroup:
-                permission.isWrite = True
-                return True
-        else:
-            node.allowedGroups.append(Permission(targetGroup, True, True))
-            return True
-
-    @withDump
-    def deleteGroup(self, groupName: str) -> bool:
+    def deleteGroup(self, groupName: str):
         "Deletes a group from all nodes"
 
-        def deleteGroupFromNode(node: Node):
-            for permission in node.allowedGroups:
+        for k, v in self.nodes.items():
+            for permission in v.allowedGroups:
                 if permission.name == groupName:
-                    node.allowedGroups.remove(permission)
-                    print("Deleted group from ", node)
-                    break
-            for child in node.children:
-                deleteGroupFromNode(child)
+                    self.nodes[k].allowedGroups.remove(permission)
+                    print("Deleted group from ", v)
 
-        deleteGroupFromNode(self.root)
+        self.dump()
 
-    @withDump
     def renameNode(self, path: str, newName: str) -> bool:
         "Renames a node"
-        tok = path.split("/")[1:]
-        node = self.root
-        for p in tok:
-            for child in node.children:
-                if child.name == p:
-                    node = child
-                    break
-            else:
-                return False
 
-        node.name = newName
+        if not (node := self.getNodeFromPath(path)):
+            return False
+
+        prePath = "/".join(path.split("/")[:-1])
+        node.name = f"{prePath}/{newName}"
+
+        self.nodes[node.name] = node
+        del self.nodes[path]
 
         fileio.renamePath(path, newName)
+
+        self.dump()
 
         return True
 
