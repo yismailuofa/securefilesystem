@@ -27,7 +27,7 @@ class CLI(cmd.Cmd):
         if path.startswith("/"):
             return path
         else:
-            if self.user.isAdmin:
+            if self.curr_dir == "/":
                 temp = f"/{path}"
             else:
                 temp = f"{self.curr_dir}/{path}"
