@@ -9,7 +9,13 @@
         "isWrite": true
       }
     ],
-    "allowedGroups": []
+    "allowedGroups": [
+      {
+        "name": "g1",
+        "isRead": true,
+        "isWrite": false
+      }
+    ]
   },
   {
     "name": "u1",
@@ -43,19 +49,14 @@
   {
     "name": "u1/baz.txt",
     "owner": "u1",
-    "allowedUsers": [
+    "allowedUsers": [],
+    "allowedGroups": [
       {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      },
-      {
-        "name": "u1",
+        "name": "g1",
         "isRead": true,
         "isWrite": true
       }
-    ],
-    "allowedGroups": []
+    ]
   },
   {
     "name": "u1/bar/zoo.txt",

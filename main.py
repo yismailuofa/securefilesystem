@@ -320,13 +320,13 @@ class CLI(cmd.Cmd):
         fileio.writeFile(path, content)
         print(f"Content written to {args.file_path}")
 
-    def do_change_file_access(self, line):
-        "Change a file's permissions. Usage: change_file_access <file_path>"
+    def do_chp(self, line):
+        "Change a file's permissions. Usage: chp <file_path>"
         if self.user is None:
             print("Please login first")
             return
 
-        parser = argparse.ArgumentParser(prog="change_file_access")
+        parser = argparse.ArgumentParser(prog="chp")
         parser.add_argument("file_path", type=str)
         if (args := tryParse(parser, line)) is None:
             return
@@ -346,20 +346,11 @@ class CLI(cmd.Cmd):
         print("2. All groups that the owner is a part of can read/write.")
         print("3. All users can read/write.")
 
-        cmd = input("Choose an option (1, 2, 3): ")
+        while (choice := input("Enter choice: ")) not in ["1", "2", "3"]:
+            print("Invalid choice")
 
-        if cmd == "1":
-            node.allowedGroups.clear()
-            node.allowedUsers.clear()
-        elif cmd == "2":
-            for group in self.user.joinedGroups:
-                node.addGroup(group, True, True)
-        elif cmd == "3":
-            node.addUser("all", True, True)
-        else:
-            print("Invalid command")
-            return
-        
+        self.graph.changePermissions(choice, path, self.user)
+
         self.graph.dump()
 
     def do_update_group(self, line):

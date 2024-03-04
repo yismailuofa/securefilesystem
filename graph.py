@@ -86,16 +86,12 @@ class Node:
     def isOwner(self, user: User) -> bool:
         "Returns if a user is the owner of a node"
         return self.owner == user.name
-    
+
     def addGroup(self, groupName: str, isRead: bool, isWrite: bool):
-        self.allowedGroups.append(
-            Permission(groupName, isRead=isRead, isWrite=isWrite)
-        )
-        
+        self.allowedGroups.append(Permission(groupName, isRead=isRead, isWrite=isWrite))
+
     def addUser(self, user: str, isRead: bool, isWrite: bool):
-        self.allowedUsers.append(
-            Permission(user, isRead=isRead, isWrite=isWrite)
-        )
+        self.allowedUsers.append(Permission(user, isRead=isRead, isWrite=isWrite))
 
 
 class Graph:
@@ -242,6 +238,38 @@ class Graph:
         self.dump()
 
         return True
+
+    def changePermissions(self, choice: str, path: str, user: User):
+        "Changes path permissions, 1 for owner, 2 for groups, 3 for users"
+        if (node := self.getNodeFromPath(path)) is None:
+            print("Node not found")
+            return
+
+        if choice == "1":
+            node.allowedGroups.clear()
+            node.allowedUsers.clear()
+        elif choice == "2":
+            for group in user.joinedGroups:
+                node.addGroup(group, True, True)
+
+            tok = path.split("/")
+            for i in range(1, len(tok) - 1):
+                if not (node := self.getNodeFromPath("/".join(tok[:i]))):
+                    print("Subnode not found")
+                    break
+
+                for group in user.joinedGroups:
+                    node.addGroup(group, True, False)
+        elif choice == "3":
+            node.addUser("all", True, True)
+
+            tok = path.split("/")
+            for i in range(1, len(tok) - 1):
+                if not (node := self.getNodeFromPath("/".join(tok[:i]))):
+                    print("Subnode not found")
+                    break
+
+                node.addUser("all", True, False)
 
 
 if __name__ == "__main__":
