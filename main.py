@@ -19,8 +19,10 @@ class CLI(cmd.Cmd):
 
     user = None
     graph = Graph("json/permissions.example.json")
+    # graph = Graph("json/encrypted_permissions.json")
     curr_dir = ""
     users = Users("json/users.example.json")
+    # users = Users("json/encrypted_users.json")
 
     def convertToAbsolutePath(self, path: str) -> str:
         "Converts a relative path to an absolute path"
