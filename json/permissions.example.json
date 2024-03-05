@@ -9,104 +9,42 @@
         "isWrite": true
       }
     ],
-    "allowedGroups": [
-      {
-        "name": "g1",
-        "isRead": true,
-        "isWrite": false
-      }
-    ]
+    "allowedGroups": []
   },
   {
     "name": "u1",
     "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
+    "allowedUsers": [],
     "allowedGroups": []
   },
   {
     "name": "u1/bar",
     "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      },
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
+    "allowedUsers": [],
     "allowedGroups": []
   },
   {
     "name": "u1/baz.txt",
     "owner": "u1",
     "allowedUsers": [],
-    "allowedGroups": [
-      {
-        "name": "g1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ]
+    "allowedGroups": []
   },
   {
     "name": "u1/bar/zoo.txt",
     "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      },
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
+    "allowedUsers": [],
     "allowedGroups": []
   },
   {
     "name": "u1/rupin",
     "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      },
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
+    "allowedUsers": [],
     "allowedGroups": []
   },
   {
     "name": "u1/rupin/joon.txt",
     "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      },
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
+    "allowedUsers": [],
     "allowedGroups": []
   }
 ]
