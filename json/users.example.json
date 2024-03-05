@@ -12,5 +12,12 @@
     "joinedGroups": [
       "g1"
     ]
+  },
+  {
+    "name": "u2",
+    "password": "$2b$12$0HKmSKv2ThbUeJXoGGAHc.eAjlOLVYK1OdZtH/ybxcMaSW4cD1Zr2",
+    "joinedGroups": [
+      "g1"
+    ]
   }
 ]

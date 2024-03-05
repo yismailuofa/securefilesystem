@@ -88,10 +88,22 @@ class Node:
         return self.owner == user.name
 
     def addGroup(self, groupName: str, isRead: bool, isWrite: bool):
-        self.allowedGroups.append(Permission(groupName, isRead=isRead, isWrite=isWrite))
+        for perm in self.allowedGroups:
+            if perm.name == groupName:
+                perm.isRead = isRead
+                perm.isWrite = isWrite
+                break
+        else:    
+            self.allowedGroups.append(Permission(groupName, isRead=isRead, isWrite=isWrite))
 
     def addUser(self, user: str, isRead: bool, isWrite: bool):
-        self.allowedUsers.append(Permission(user, isRead=isRead, isWrite=isWrite))
+        for perm in self.allowedGroups:
+            if perm.name == user:
+                perm.isRead = isRead
+                perm.isWrite = isWrite
+                break
+        else:    
+            self.allowedGroups.append(Permission(user, isRead=isRead, isWrite=isWrite))
 
 
 class Graph:
@@ -253,7 +265,7 @@ class Graph:
                 node.addGroup(group, True, True)
 
             tok = path.split("/")
-            for i in range(1, len(tok) - 1):
+            for i in range(1, len(tok)):
                 if not (node := self.getNodeFromPath("/".join(tok[:i]))):
                     print("Subnode not found")
                     break

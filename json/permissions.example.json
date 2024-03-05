@@ -46,5 +46,17 @@
     "owner": "u1",
     "allowedUsers": [],
     "allowedGroups": []
+  },
+  {
+    "name": "u2",
+    "owner": "u2",
+    "allowedUsers": [
+      {
+        "name": "u2",
+        "isRead": true,
+        "isWrite": true
+      }
+    ],
+    "allowedGroups": []
   }
 ]
