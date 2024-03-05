@@ -97,14 +97,21 @@ class Node:
             self.allowedGroups.append(Permission(groupName, isRead=isRead, isWrite=isWrite))
 
     def addUser(self, user: str, isRead: bool, isWrite: bool):
-        for perm in self.allowedGroups:
+        for perm in self.allowedUsers:
             if perm.name == user:
                 perm.isRead = isRead
                 perm.isWrite = isWrite
                 break
         else:    
-            self.allowedGroups.append(Permission(user, isRead=isRead, isWrite=isWrite))
-
+            self.allowedUsers.append(Permission(user, isRead=isRead, isWrite=isWrite))
+            
+    def removeUser(self, user: str = "all"):
+        for i in range(len(self.allowedUsers)):
+            perm = self.allowedUsers[i]
+            
+            if perm.name == user:
+                self.allowedUsers.pop(i)
+                break
 
 class Graph:
     def __init__(self, jsonPath: str):
@@ -261,6 +268,8 @@ class Graph:
             node.allowedGroups.clear()
             node.allowedUsers.clear()
         elif choice == "2":
+            node.removeUser()
+            
             for group in user.joinedGroups:
                 node.addGroup(group, True, True)
 
@@ -276,7 +285,7 @@ class Graph:
             node.addUser("all", True, True)
 
             tok = path.split("/")
-            for i in range(1, len(tok) - 1):
+            for i in range(1, len(tok)):
                 if not (node := self.getNodeFromPath("/".join(tok[:i]))):
                     print("Subnode not found")
                     break
