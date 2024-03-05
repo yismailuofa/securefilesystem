@@ -71,6 +71,14 @@ class CLI(cmd.Cmd):
 
         print(f"Logged in as {self.user.name}")
 
+        failures = self.graph.checkPathIntegrity(self.curr_dir)
+
+        if failures:
+            for failure in failures:
+                print(f"File {failure} is corrupted ❌")
+        else:
+            print("No corrupted files found ✅")
+
     def do_register(self, _):
         "Register a new user. Usage: register"
 

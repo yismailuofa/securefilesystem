@@ -153,4 +153,13 @@ def renamePath(oldPath, name: str):
 
 
 if __name__ == "__main__":
-    print(readPath("u1"))
+    print(
+        isFolder(
+            "/files/gAAAAABl5gxsmqPeQH3pjj18IQCb5kCQLW_DBPUlSAk0amQSHvdiOFd83H0Djrcup6kzQAF4o57ab6uC9yz5yYnkG6kUEEcgyw==/gAAAAABl5n8FHKXYdbL1BHzGiCDrqD4sbGrDg4xlfre7CwMLSjJTxffODC0EKlsLOMyqFkYKfLuFbsI1_ObHiiWkGnWgW3h16A=="
+        )
+    )
+    print(
+        isFolder(
+            "/files/files/gAAAAABl5gxsmqPeQH3pjj18IQCb5kCQLW_DBPUlSAk0amQSHvdiOFd83H0Djrcup6kzQAF4o57ab6uC9yz5yYnkG6kUEEcgyw==/gAAAAABl5n8FHKXYdbL1BHzGiCDrqD4sbGrDg4xlfre7CwMLSjJTxffODC0EKlsLOMyqFkYKfLuFbsI1_ObHiiWkGnWgW3h16A=="
+        )
+    )

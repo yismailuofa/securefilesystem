@@ -292,6 +292,18 @@ class Graph:
 
                 node.addUser("all", True, False)
 
+    def checkPathIntegrity(self, path: str) -> list[str]:
+        "Returns all files under a path are invalid"
+
+        out = []
+        for name in self.nodes:
+            if name.startswith(path) and not fileio.isFolder(name):
+                try:
+                    fileio.readFile(name)
+                except:
+                    out.append(name)
+        return out
+
 
 if __name__ == "__main__":
     graph = Graph("json/permissions.example.json")
