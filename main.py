@@ -105,7 +105,7 @@ class CLI(cmd.Cmd):
 
         self.user = self.users.users[username]
 
-        self.curr_dir = f"/{self.user.name}" if not self.user.isAdmin else "/"
+        self.curr_dir = f"{self.user.name}" if not self.user.isAdmin else ""
         self.prompt = prompt_template.format(
             user=self.user.name, curr_dir=self.curr_dir
         )

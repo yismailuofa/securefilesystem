@@ -94,8 +94,10 @@ class Node:
                 perm.isRead = isRead
                 perm.isWrite = isWrite
                 break
-        else:    
-            self.allowedGroups.append(Permission(groupName, isRead=isRead, isWrite=isWrite))
+        else:
+            self.allowedGroups.append(
+                Permission(groupName, isRead=isRead, isWrite=isWrite)
+            )
 
     def addUser(self, user: str, isRead: bool, isWrite: bool):
         for perm in self.allowedUsers:
@@ -103,16 +105,17 @@ class Node:
                 perm.isRead = isRead
                 perm.isWrite = isWrite
                 break
-        else:    
+        else:
             self.allowedUsers.append(Permission(user, isRead=isRead, isWrite=isWrite))
-            
+
     def removeUser(self, user: str = "all"):
         for i in range(len(self.allowedUsers)):
             perm = self.allowedUsers[i]
-            
+
             if perm.name == user:
                 self.allowedUsers.pop(i)
                 break
+
 
 class Graph:
     def __init__(self, jsonPath: str):
@@ -270,7 +273,7 @@ class Graph:
             node.allowedUsers.clear()
         elif choice == "2":
             node.removeUser()
-            
+
             for group in user.joinedGroups:
                 node.addGroup(group, True, True)
 
