@@ -41,7 +41,7 @@ def encryptString(data: str) -> str:
 def decryptString(data: str) -> str:
     fernet = Fernet(key())
 
-    return fernet.decrypt(data).decode()
+    return fernet.decrypt(data.encode()).decode()
 
 
 def isEncrypted(filePath: str) -> bool:
