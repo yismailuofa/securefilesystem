@@ -1,7 +1,8 @@
 import json
 
-from encrypt import decryptJson, encryptJson, isEncrypted
+from encrypt import Encryptor
 
+encryptor = Encryptor()
 
 class User:
     def __init__(self, name: str, password: str, joinedGroups=[]) -> None:
@@ -26,11 +27,11 @@ class User:
 class Users:
     def __init__(self, jsonPath: str) -> None:
         self.jsonPath = jsonPath
-        self.isEncrypted = isEncrypted(jsonPath)
+        self.isEncrypted = encryptor.isEncrypted(jsonPath)
 
         with open(jsonPath, "r") as f:
             if self.isEncrypted:
-                users = decryptJson(jsonPath)
+                users = encryptor.decryptJson(jsonPath)
             else:
                 users = json.load(f)
 
@@ -42,7 +43,7 @@ class Users:
         data = [user.dump() for user in self.users.values()]
 
         if self.isEncrypted:
-            encryptJson(data, self.jsonPath)
+            encryptor.encryptJson(data, self.jsonPath)
         else:
             with open(self.jsonPath, "w") as f:
                 json.dump(data, f, indent=2)

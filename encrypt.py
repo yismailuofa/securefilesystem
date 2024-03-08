@@ -5,54 +5,55 @@ import json
 ENCRYPTION_PREFIX = "encrypted_"
 
 
-def key():
-    with open("fernet.key", "r") as f:
-        key = f.read()
-        return key
+# make a singleton Encryptor class
+class Encryptor:
+    __instance = None
 
+    def __new__(cls):
+        if cls.__instance is None:
+            cls.__instance = super(Encryptor, cls).__new__(cls)
+            cls.__instance.fernet = Fernet(cls.__instance.key())
+        return cls.__instance
 
-def encryptJson(data, outFile: str):
-    fernet = Fernet(key())
+    def key(self):
+        with open("fernet.key", "r") as f:
+            key = f.read()
+            return key
 
-    data = json.dumps(data).encode()
+    def encryptJson(self, data, outFile: str):
+        data = json.dumps(data).encode()
 
-    *path, fileName = outFile.split("/")
-    outFile = "/".join(path) + "/" + ENCRYPTION_PREFIX + fileName
+        *path, fileName = outFile.split("/")
+        outFile = "/".join(path) + "/" + ENCRYPTION_PREFIX + fileName
 
-    with open(outFile, "wb") as f:
-        f.write(fernet.encrypt(data))
+        with open(outFile, "wb") as f:
+            f.write(self.fernet.encrypt(data))
 
+    def decryptJson(self, inFile: str) -> dict:
+        with open(inFile, "rb") as f:
+            data = f.read()
 
-def decryptJson(inFile: str) -> dict:
-    fernet = Fernet(key())
+        return json.loads(self.fernet.decrypt(data))
 
-    with open(inFile, "rb") as f:
-        data = f.read()
+    def encryptString(self, data: str) -> str:
+        return self.fernet.encrypt(data.encode()).decode()
 
-    return json.loads(fernet.decrypt(data))
+    def decryptString(self, data: str) -> str:
+        return self.fernet.decrypt(data.encode()).decode()
 
-
-def encryptString(data: str) -> str:
-    fernet = Fernet(key())
-
-    return fernet.encrypt(data.encode()).decode()
-
-
-def decryptString(data: str) -> str:
-    fernet = Fernet(key())
-
-    return fernet.decrypt(data.encode()).decode()
-
-
-def isEncrypted(filePath: str) -> bool:
-    return filePath.split("/")[-1].startswith(ENCRYPTION_PREFIX)
+    def isEncrypted(self, filePath: str) -> bool:
+        return filePath.split("/")[-1].startswith(ENCRYPTION_PREFIX)
 
 
 if __name__ == "__main__":
+    # initialize the encryptor
+    encryptor = Encryptor()
+
+    # encrypt the json files
     with open("json/permissions.example.json", "r") as f:
         data = json.load(f)
-        encryptJson(data, "json/permissions.json")
+        encryptor.encryptJson(data, "json/permissions.json")
 
     with open("json/users.example.json", "r") as f:
         data = json.load(f)
-        encryptJson(data, "json/users.json")
+        encryptor.encryptJson(data, "json/users.json")

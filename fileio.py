@@ -1,9 +1,11 @@
 import os
 from typing import Optional
-from encrypt import encryptString, decryptString
+from encrypt import Encryptor
+
 
 
 FILE_PATH = "files/"
+encryptor = Encryptor()
 
 
 class PathReadResult:
@@ -11,7 +13,7 @@ class PathReadResult:
         self.encryptedName = maybeEncryptedName
         self.isFolder = isFolder
         try:
-            self.name = decryptString(maybeEncryptedName)
+            self.name = encryptor.decryptString(maybeEncryptedName)
         except:
             self.name = maybeEncryptedName
 
@@ -31,7 +33,7 @@ def findPath(path: str, curr: str = FILE_PATH) -> Optional[str]:
     first, *rest = [part for part in path.split("/") if part]
     for dir in os.listdir(curr):
         try:
-            if decryptString(dir) == first:
+            if encryptor.decryptString(dir) == first:
                 return findPath("/".join(rest), os.path.join(curr, dir))
         except:
             pass
@@ -60,16 +62,16 @@ def makePath(path: str, curr: str = FILE_PATH, isFile: bool = False) -> str:
     first, *rest = path.split("/")
 
     if not rest and isFile:
-        return os.path.join(curr, encryptString(first))
+        return os.path.join(curr, encryptor.encryptString(first))
 
     for dir in os.listdir(curr):
         try:
-            if decryptString(dir) == first:
+            if encryptor.decryptString(dir) == first:
                 return makePath("/".join(rest), os.path.join(curr, dir), isFile)
         except:
             pass
 
-    newDir = os.path.join(curr, encryptString(first))
+    newDir = os.path.join(curr, encryptor.encryptString(first))
     os.mkdir(newDir)
 
     return makePath("/".join(rest), newDir, isFile)
@@ -84,7 +86,7 @@ def readFile(path) -> str:
         raise IsADirectoryError
 
     with open(path, "rb") as f:
-        return decryptString(f.read().decode())
+        return encryptor.decryptString(f.read().decode())
 
 
 def readPath(path) -> list[PathReadResult]:
@@ -107,7 +109,7 @@ def writeFile(path: str, contents: str):
         writePath = makePath(path, isFile=True)
 
     with open(writePath, "wb") as f:
-        f.write(encryptString(contents).encode())
+        f.write(encryptor.encryptString(contents).encode())
 
 
 def removeFile(path):
@@ -145,7 +147,7 @@ def renamePath(oldPath, name: str):
     if not (oldPath := findPath(oldPath)):
         raise FileNotFoundError
 
-    encryptedName = encryptString(name)
+    encryptedName = encryptor.encryptString(name)
 
     newPath = os.path.join(os.path.dirname(oldPath), encryptedName)
 

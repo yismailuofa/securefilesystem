@@ -1,9 +1,10 @@
 import json
 from typing import Optional
-from encrypt import decryptJson, encryptJson, isEncrypted
+from encrypt import Encryptor
 import fileio
 from user import User
 
+encryptor = Encryptor()
 
 class Permission:
     def __init__(self, name, isRead, isWrite) -> None:
@@ -116,11 +117,11 @@ class Node:
 class Graph:
     def __init__(self, jsonPath: str):
         self.jsonPath = jsonPath
-        self.isEncrypted = isEncrypted(jsonPath)
+        self.isEncrypted = encryptor.isEncrypted(jsonPath)
 
         with open(jsonPath, "r") as f:
             if self.isEncrypted:
-                graph = decryptJson(jsonPath)
+                graph = encryptor.decryptJson(jsonPath)
             else:
                 graph = json.load(f)
 
@@ -132,7 +133,7 @@ class Graph:
         data = [node.dump() for node in self.nodes.values()]
 
         if self.isEncrypted:
-            encryptJson(data, self.jsonPath)
+            encryptor.encryptJson(data, self.jsonPath)
         else:
             with open(self.jsonPath, "w") as f:
                 json.dump(data, f, indent=2)
