@@ -10,51 +10,5 @@
       }
     ],
     "allowedGroups": []
-  },
-  {
-    "name": "u1",
-    "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
-    "allowedGroups": []
-  },
-  {
-    "name": "u1/foo.txt",
-    "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      },
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
-    "allowedGroups": []
-  },
-  {
-    "name": "u1/bar",
-    "owner": "u1",
-    "allowedUsers": [
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      },
-      {
-        "name": "u1",
-        "isRead": true,
-        "isWrite": true
-      }
-    ],
-    "allowedGroups": []
   }
 ]

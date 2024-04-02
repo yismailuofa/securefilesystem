@@ -2,13 +2,6 @@
   {
     "name": "admin",
     "password": "$2b$12$4tdDvsvDSn9xcBHxv3OoYORR.PxX4ncfid8gb3iqnU76bu.jRQoiO",
-    "joinedGroups": [
-      "g1"
-    ]
-  },
-  {
-    "name": "u1",
-    "password": "$2b$12$XuO84Zr4aikRHrCnD2MMp.FvsW7gDpXwrHXXVDPmrG5bGy1t63VZC",
     "joinedGroups": []
   }
 ]

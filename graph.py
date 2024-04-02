@@ -6,6 +6,7 @@ from user import User
 
 encryptor = Encryptor()
 
+
 class Permission:
     def __init__(self, name, isRead, isWrite) -> None:
         self.name: str = name

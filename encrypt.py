@@ -24,6 +24,10 @@ class Encryptor:
         data = json.dumps(data).encode()
 
         *path, fileName = outFile.split("/")
+
+        if fileName.startswith(ENCRYPTION_PREFIX):
+            fileName = fileName[len(ENCRYPTION_PREFIX) :]
+
         outFile = "/".join(path) + "/" + ENCRYPTION_PREFIX + fileName
 
         with open(outFile, "wb") as f:
